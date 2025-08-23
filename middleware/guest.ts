@@ -1,8 +1,17 @@
-export default defineNuxtRouteMiddleware((to, from) => {
-  const user = useSupabaseUser()
+export default defineNuxtRouteMiddleware(async (to, from) => {
+  // Solo ejecutar en el cliente
+  if (process.server) return
 
-  // Si el usuario ya está autenticado, redirigir al dashboard
-  if (user.value) {
-    return navigateTo('/dashboard')
+  const { checkSession } = useAdminAuth()
+  
+  try {
+    const hasValidSession = await checkSession()
+    
+    if (hasValidSession) {
+      return navigateTo('/dashboard')
+    }
+  } catch (error) {
+    // Si hay error verificando la sesión, permitir acceso a la página de guest
+    console.log('No hay sesión válida, permitiendo acceso a página guest')
   }
 })

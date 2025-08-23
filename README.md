@@ -4,10 +4,11 @@ Sistema empresarial completo de email marketing con **Magic Link Authentication*
 
 ## 🚀 Características Principales
 
-### 🔐 Autenticación Magic Link
-- **Sin contraseñas**: Acceso seguro solo con email
-- **Enlaces únicos**: Magic Links temporales y seguros
-- **Auto-registro**: Creación automática de usuarios
+### 🔐 Autenticación de Administrador Único
+- **Acceso restringido**: Solo administradores autorizados
+- **Credenciales configurables**: Variables de entorno personalizables
+- **Registro deshabilitado**: Sin registro público disponible
+- **Sesiones seguras**: Cookies httpOnly con expiración automática
 - **Sesiones JWT**: Tokens seguros con renovación automática
 
 ### ✅ Gestión de Contactos
@@ -330,6 +331,53 @@ Para soporte técnico o preguntas:
 - 📧 Email: soporte@be-mindpower.com
 - 📖 Documentación: [docs.be-mindpower.com](https://docs.be-mindpower.com)
 - 🐛 Issues: [GitHub Issues](https://github.com/tu-usuario/mailer-be-mindpower/issues)
+
+## 🔐 Configuración de Autenticación
+
+### Variables de Entorno para Login
+
+El sistema utiliza **acceso administrativo único** con credenciales configurables:
+
+```bash
+# Credenciales de administrador
+username_mailer=info@be-mindpower.net
+password_mailer=Be-mind.2025+++
+
+# Supabase Service Role Key (opcional, para creación automática de usuarios)
+SUPABASE_SERVICE_ROLE_KEY=tu_service_role_key_aqui
+```
+
+### Credenciales por Defecto
+
+Si no configuras las variables de entorno, el sistema usará:
+- **Email:** `info@be-mindpower.net`
+- **Contraseña:** `Be-mind.2025+++`
+
+### Acceso al Sistema
+
+1. Navega a `/auth/admin-login`
+2. Ingresa las credenciales configuradas
+3. **Primera vez:** El sistema registrará automáticamente el usuario en Supabase
+4. Sesión administrativa válida por 8 horas
+
+### Obtener Service Role Key (Opcional)
+
+Para creación automática de usuarios, necesitas el Service Role Key de Supabase:
+
+1. Ve a tu proyecto en [Supabase Dashboard](https://supabase.com/dashboard)
+2. Ve a **Settings** → **API**
+3. Copia el **service_role key** (¡NO el anon key!)
+4. Agrégalo como variable de entorno: `SUPABASE_SERVICE_ROLE_KEY=tu_key_aqui`
+
+> ⚠️ **Importante:** El Service Role Key tiene permisos completos. Manténlo seguro y nunca lo expongas en el frontend.
+
+### Características de Seguridad
+
+- ✅ **Registro público deshabilitado**
+- ✅ **Acceso único de administrador**
+- ✅ **Sesiones con expiración automática**
+- ✅ **Middleware de protección en todas las rutas**
+- ✅ **Cookies seguras con httpOnly**
 
 ## 🎯 Roadmap
 

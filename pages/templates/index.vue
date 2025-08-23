@@ -242,7 +242,7 @@ import {
 } from '@heroicons/vue/24/outline'
 
 // Proteger la ruta
-definePageMeta({ middleware: 'auth' })
+definePageMeta({ middleware: 'admin' })
 
 // Composables
 const { supabase } = useSupabaseMaster()

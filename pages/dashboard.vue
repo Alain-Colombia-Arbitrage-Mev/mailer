@@ -333,7 +333,7 @@ onMounted(async () => {
 
 // Metadata
 definePageMeta({
-  middleware: 'auth'
+  middleware: 'admin'
 })
 
 useSeoMeta({

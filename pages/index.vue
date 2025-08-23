@@ -16,16 +16,16 @@
         <div class="mt-5 max-w-md mx-auto sm:flex sm:justify-center md:mt-8">
           <div class="rounded-md shadow">
             <NuxtLink
-              to="/auth/login"
+              to="/auth/admin-login"
               class="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 md:py-4 md:text-lg md:px-10 transition-colors"
             >
               <ShieldCheckIcon class="h-5 w-5 mr-2" />
-              Acceso con Magic Link
+              Acceso Administrativo
             </NuxtLink>
           </div>
         </div>
         <p class="mt-3 text-sm text-gray-500">
-          Acceso seguro sin contraseñas • Solo necesitas tu email
+          Solo administradores autorizados • Registro deshabilitado
         </p>
       </div>
 

@@ -27,6 +27,13 @@ export default defineNuxtConfig({
     smtpFromEmail: process.env.SMTP_FROM_EMAIL || 'info@be-mindpower.net',
     smtpReplyTo: process.env.SMTP_REPLY_TO || 'info@be-mindpower.net',
     
+    // Admin credentials (only available on server-side)
+    adminEmail: process.env.username_mailer || 'info@be-mindpower.net',
+    adminPassword: process.env.password_mailer || 'Be-mind.2025+++',
+    
+    // Supabase service role key (only available on server-side)
+    supabaseServiceKey: process.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh4bWR6aGtrdWhzZXRxdWNicGlhIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0ODgzOTkyMSwiZXhwIjoyMDY0NDE1OTIxfQ.iWxWRFfYrV7I_f2xnOD2NB3sWuDDV-wjKdGjKdGjKdG',
+    
     // Public keys (exposed to client-side) - URL CORRECTA FORZADA
     public: {
       supabaseUrl: 'https://hxmdzhkkuhsetqucbpia.supabase.co',
