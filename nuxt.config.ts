@@ -42,17 +42,6 @@ export default defineNuxtConfig({
     }
   },
   
-  supabase: {
-    // DESACTIVAR TODAS LAS REDIRECCIONES AUTOMÁTICAS
-    redirect: false,
-    cookieOptions: {
-      maxAge: 60 * 60 * 24,
-      sameSite: 'lax',
-      secure: process.env.NODE_ENV === 'production',
-      httpOnly: false
-    }
-  },
-  
   ssr: true,
   
   // Puerto configurado en 3001 según BASE_URL
@@ -73,6 +62,32 @@ export default defineNuxtConfig({
         { name: 'viewport', content: 'width=device-width, initial-scale=1' },
         { name: 'description', content: 'Sistema empresarial completo de email marketing con tracking avanzado' }
       ]
+    }
+  },
+
+  // Build configuration to avoid native binding issues
+  nitro: {
+    experimental: {
+      wasm: true
+    },
+    esbuild: {
+      options: {
+        target: 'es2020'
+      }
+    }
+  },
+
+  // Vite configuration for build compatibility
+  vite: {
+    optimizeDeps: {
+      exclude: ['oxc-parser', '@oxc-parser/binding-linux-x64-gnu']
+    }
+  },
+
+  // Build hooks to handle native dependencies
+  hooks: {
+    'build:before': () => {
+      console.log('Starting build with native dependency handling...')
     }
   }
 })
