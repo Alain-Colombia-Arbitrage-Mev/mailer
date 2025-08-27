@@ -19,46 +19,46 @@ export default defineNuxtConfig({
     awsRegion: process.env.AWS_REGION || 'us-east-1',
     
     // SMTP Configuration
-    smtpHost: process.env.SMTP_HOST || 'email-smtp.us-east-1.amazonaws.com',
-    smtpPort: process.env.SMTP_PORT || '587',
-    smtpUsername: process.env.SMTP_USERNAME || 'info@be-mindpower.net',
-    smtpPassword: process.env.SMTP_PASSWORD || '@Angelyalaia.2024',
-    smtpFromName: process.env.SMTP_FROM_NAME || 'BMP Support',
-    smtpFromEmail: process.env.SMTP_FROM_EMAIL || 'info@be-mindpower.net',
-    smtpReplyTo: process.env.SMTP_REPLY_TO || 'info@be-mindpower.net',
+    smtpHost: process.env.SMTP_HOST,
+    smtpPort: process.env.SMTP_PORT,
+    smtpUsername: process.env.SMTP_USERNAME,
+    smtpPassword: process.env.SMTP_PASSWORD,
+    smtpFromName: process.env.SMTP_FROM_NAME,
+    smtpFromEmail: process.env.SMTP_FROM_EMAIL,
+    smtpReplyTo: process.env.SMTP_REPLY_TO,
     
     // Admin credentials (only available on server-side)
-    adminEmail: process.env.username_mailer || 'info@be-mindpower.net',
-    adminPassword: process.env.password_mailer || 'Be-mind.2025+++',
+    adminEmail: process.env.ADMIN_EMAIL || 'info@be-mindpower.net',
+    adminPassword: process.env.ADMIN_PASSWORD || 'mK-d9846MYfOTglD',
     
     // Supabase service role key (only available on server-side)
-    supabaseServiceKey: process.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh4bWR6aGtrdWhzZXRxdWNicGlhIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0ODgzOTkyMSwiZXhwIjoyMDY0NDE1OTIxfQ.iWxWRFfYrV7I_f2xnOD2NB3sWuDDV-wjKdGjKdGjKdG',
+    supabaseServiceKey: process.env.SUPABASE_SERVICE_ROLE_KEY,
     
-    // Public keys (exposed to client-side) - URL CORRECTA FORZADA
+    // Public keys (exposed to client-side)
     public: {
-      supabaseUrl: 'https://hxmdzhkkuhsetqucbpia.supabase.co',
-      supabaseAnonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh4bWR6aGtrdWhzZXRxdWNicGlhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4Mzk5MjEsImV4cCI6MjA2NDQxNTkyMX0.-vUT8oRIKl4Pk7UZDOVhxxMRCictahFwAFEYc98HwFI',
-      baseUrl: process.env.BASE_URL || 'http://localhost:3000'
+      supabaseUrl: process.env.SUPABASE_URL || 'https://hxmdzhkkuhsetqucbpia.supabase.co',
+      supabaseAnonKey: process.env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh4bWR6aGtrdWhzZXRxdWNicGlhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4Mzk5MjEsImV4cCI6MjA2NDQxNTkyMX0.-vUT8oRIKl4Pk7UZDOVhxxMRCictahFwAFEYc98HwFI',
+      baseUrl: process.env.BASE_URL || 'http://localhost:3001'
     }
   },
   
   supabase: {
-    // URL CORRECTA FORZADA - NO usar variables de entorno
-    url: 'https://hxmdzhkkuhsetqucbpia.supabase.co',
-    key: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh4bWR6aGtrdWhzZXRxdWNicGlhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4Mzk5MjEsImV4cCI6MjA2NDQxNTkyMX0.-vUT8oRIKl4Pk7UZDOVhxxMRCictahFwAFEYc98HwFI',
-    redirectOptions: {
-      login: '/auth/login',
-      callback: '/auth/callback',
-      exclude: ['/auth/*', '/']
-    },
+    // DESACTIVAR TODAS LAS REDIRECCIONES AUTOMÁTICAS
+    redirect: false,
     cookieOptions: {
-      maxAge: 60 * 60 * 8, // 8 hours
+      maxAge: 60 * 60 * 24,
       sameSite: 'lax',
-      secure: process.env.NODE_ENV === 'production'
+      secure: process.env.NODE_ENV === 'production',
+      httpOnly: false
     }
   },
   
   ssr: true,
+  
+  // Puerto configurado en 3001 según BASE_URL
+  devServer: {
+    port: 3001
+  },
   
   // Asegurar que los auto-imports funcionen correctamente
   imports: {

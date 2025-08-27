@@ -1,13 +1,26 @@
 export default defineNuxtRouteMiddleware((to, from) => {
-  const user = useSupabaseUser()
+  // Skip middleware on server-side rendering
+  if (process.server) return
 
-  // If user is not logged in and trying to access protected route
-  if (!user.value && to.path !== '/auth/login' && to.path !== '/auth/register' && to.path !== '/auth/callback' && to.path !== '/') {
-    return navigateTo('/auth/login')
+  // Check if user is authenticated
+  const storedUser = localStorage.getItem('mailpower_user')
+  
+  if (!storedUser) {
+    // User is not authenticated, redirect to login
+    return navigateTo('/login')
   }
-
-  // If user is logged in and trying to access auth pages
-  if (user.value && (to.path === '/auth/login' || to.path === '/auth/register')) {
-    return navigateTo('/dashboard')
+  
+  try {
+    // Validate stored user data
+    const user = JSON.parse(storedUser)
+    if (!user.email || !user.id) {
+      // Invalid user data, remove and redirect to login
+      localStorage.removeItem('mailpower_user')
+      return navigateTo('/login')
+    }
+  } catch (error) {
+    // Invalid JSON, remove and redirect to login
+    localStorage.removeItem('mailpower_user')
+    return navigateTo('/login')
   }
 })

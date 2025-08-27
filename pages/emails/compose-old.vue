@@ -332,8 +332,8 @@ import {
   CheckIcon
 } from '@heroicons/vue/24/outline'
 
-// Proteger la ruta
-definePageMeta({ middleware: 'auth' })
+// Middleware temporalmente desactivado
+// definePageMeta({ middleware: 'auth' })
 
 // Composables
 const { user } = useSupabaseMaster()

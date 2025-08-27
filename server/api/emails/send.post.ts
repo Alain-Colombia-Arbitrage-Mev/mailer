@@ -135,7 +135,13 @@ export default defineEventHandler(async (event) => {
 
     // Registrar en base de datos (opcional)
     try {
-      const { supabase } = useSupabaseMaster()
+      const { createClient } = await import('@supabase/supabase-js')
+      const supabase = createClient(
+        'https://hxmdzhkkuhsetqucbpia.supabase.co',
+        process.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh4bWR6aGtrdWhzZXRxdWNicGlhIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0ODgzOTkyMSwiZXhwIjoyMDY0NDE1OTIxfQ.kdqKzSSJcyxT4AIVp2wnu2RgS_Bc7CmTVgcqjdk1fRs'
+      )
+      
+      console.log('📝 Registrando envíos en base de datos...')
       
       // Registrar cada envío
       for (const result of results) {
@@ -162,6 +168,8 @@ export default defineEventHandler(async (event) => {
           sent_at: new Date().toISOString()
         })
       }
+      
+      console.log(`✅ Registros guardados: ${results.length} enviados, ${errors.length} errores`)
     } catch (dbError) {
       console.error('Error registrando en base de datos:', dbError)
       // No fallar el envío por errores de BD

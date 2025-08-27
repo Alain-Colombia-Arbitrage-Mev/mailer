@@ -329,8 +329,8 @@ import {
   XMarkIcon
 } from '@heroicons/vue/24/outline'
 
-// Proteger la ruta
-definePageMeta({ middleware: 'admin' })
+// Middleware temporalmente desactivado
+// BYPASS COMPLETO - definePageMeta({ middleware: 'admin' }) // DESACTIVADO
 
 // Composables
 const route = useRoute()

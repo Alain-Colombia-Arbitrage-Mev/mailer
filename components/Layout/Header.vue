@@ -87,6 +87,63 @@
             </div>
           </div>
         </div>
+
+        <!-- User menu -->
+        <div class="relative">
+          <button
+            @click="toggleUserMenu"
+            class="flex items-center space-x-3 p-2 rounded-md text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          >
+            <div class="flex items-center space-x-2">
+              <UserCircleIcon class="w-8 h-8 text-gray-500" />
+              <div class="text-left hidden sm:block">
+                <div class="text-sm font-medium">{{ displayName }}</div>
+                <div class="text-xs text-gray-500">{{ userRole }}</div>
+              </div>
+            </div>
+            <ChevronDownIcon class="w-4 h-4 text-gray-400" />
+          </button>
+
+          <!-- User dropdown -->
+          <div
+            v-if="showUserMenu"
+            class="absolute right-0 mt-2 w-64 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-50"
+          >
+            <div class="px-4 py-3 border-b border-gray-100">
+              <div class="text-sm font-medium text-gray-900">{{ displayName }}</div>
+              <div class="text-sm text-gray-500">{{ currentUser?.email }}</div>
+              <div class="text-xs text-gray-400 mt-1">
+                Autenticado vía: {{ userSource }}
+              </div>
+            </div>
+            <div class="py-1">
+              <NuxtLink
+                to="/profile"
+                class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                @click="showUserMenu = false"
+              >
+                <UserCircleIcon class="w-4 h-4 mr-3 text-gray-400" />
+                Mi Perfil
+              </NuxtLink>
+              <NuxtLink
+                to="/settings"
+                class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                @click="showUserMenu = false"
+              >
+                <Cog6ToothIcon class="w-4 h-4 mr-3 text-gray-400" />
+                Configuración
+              </NuxtLink>
+              <div class="border-t border-gray-100"></div>
+              <button
+                @click="handleSignOut"
+                class="flex items-center w-full px-4 py-2 text-sm text-red-700 hover:bg-red-50"
+              >
+                <ArrowLeftOnRectangleIcon class="w-4 h-4 mr-3 text-red-400" />
+                Cerrar Sesión
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -147,7 +204,10 @@ import {
   DocumentTextIcon,
   CheckCircleIcon,
   ExclamationTriangleIcon,
-  InformationCircleIcon
+  InformationCircleIcon,
+  UserCircleIcon,
+  Cog6ToothIcon,
+  ArrowLeftOnRectangleIcon
 } from '@heroicons/vue/24/outline'
 
 interface Breadcrumb {
@@ -179,10 +239,14 @@ const emit = defineEmits<{
   'search': [query: string]
 }>()
 
+// Sistema con URL correcta forzada
+const { currentUser, signOut } = useCorrectSupabase()
+
 // State
 const searchQuery = ref('')
 const showQuickActions = ref(false)
 const showNotifications = ref(false)
+const showUserMenu = ref(false)
 const unreadNotifications = ref(3)
 
 // Mock notifications
@@ -214,6 +278,7 @@ const notifications = ref<Notification[]>([
 ])
 
 const quickActions = [
+  { name: 'Componer Email', href: '/emails/compose-new', icon: EnvelopeIcon },
   { name: 'Nueva Campaña', href: '/campaigns/new', icon: EnvelopeIcon },
   { name: 'Nuevo Contacto', href: '/contacts/new', icon: UsersIcon },
   { name: 'Nueva Plantilla', href: '/templates/new', icon: DocumentTextIcon }
@@ -227,11 +292,35 @@ const handleSearch = useDebounceFn(() => {
 const toggleQuickActions = () => {
   showQuickActions.value = !showQuickActions.value
   showNotifications.value = false
+  showUserMenu.value = false
 }
 
 const toggleNotifications = () => {
   showNotifications.value = !showNotifications.value
   showQuickActions.value = false
+  showUserMenu.value = false
+}
+
+const toggleUserMenu = () => {
+  showUserMenu.value = !showUserMenu.value
+  showQuickActions.value = false
+  showNotifications.value = false
+}
+
+// Función para cerrar sesión
+const handleSignOut = async () => {
+  try {
+    const result = await signOut()
+    
+    if (result.success) {
+      showUserMenu.value = false
+      // La función signOut ya maneja la redirección
+    } else {
+      console.error('Error cerrando sesión:', result.error)
+    }
+  } catch (error) {
+    console.error('Error signing out:', error)
+  }
 }
 
 const getNotificationIcon = (type: string) => {
@@ -271,10 +360,26 @@ const formatTime = (timestamp: string) => {
   return date.toLocaleDateString()
 }
 
+// Computadas para mostrar información del usuario
+const displayName = computed(() => {
+  if (!currentUser.value) return 'Usuario'
+  return currentUser.value.name || currentUser.value.email?.split('@')[0] || 'Usuario'
+})
+
+const userRole = computed(() => {
+  if (!currentUser.value) return 'Invitado'
+  return currentUser.value.isAdmin ? 'Administrador' : 'Usuario'
+})
+
+const userSource = computed(() => {
+  return currentUser.value?.source || 'N/A'
+})
+
 // Close dropdowns when clicking outside
 const headerRef = ref(null)
 onClickOutside(headerRef, () => {
   showQuickActions.value = false
   showNotifications.value = false
+  showUserMenu.value = false
 })
 </script>

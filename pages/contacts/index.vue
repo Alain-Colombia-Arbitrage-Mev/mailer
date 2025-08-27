@@ -1,1125 +1,513 @@
 <template>
-  <div class="min-h-screen bg-gray-50">
-    <!-- Header -->
-    <div class="bg-white shadow-sm border-b border-gray-200">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex flex-col lg:flex-row lg:justify-between lg:items-center py-4 lg:py-6 space-y-4 lg:space-y-0">
-      <div>
-            <h1 class="text-xl sm:text-2xl font-bold text-gray-900">
-              Gestión de Usuarios
-              <span class="ml-2 text-sm font-normal text-blue-600 bg-blue-100 px-2 py-1 rounded-full">
-                {{ realStats.total.toLocaleString() }} usuarios
-              </span>
-            </h1>
-        <p class="mt-1 text-sm text-gray-500">
-              Administra tu base de datos de usuarios registrados con etiquetas y categorías
-        </p>
-      </div>
-          <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
-        <button
-          @click="showImportModal = true"
-              class="inline-flex items-center justify-center px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors"
-        >
-              <ArrowUpTrayIcon class="h-4 w-4 mr-2" />
-              <span class="hidden sm:inline">Importar CSV/Excel</span>
-              <span class="sm:hidden">Importar</span>
-        </button>
-            <button
-              @click="exportContacts"
-              :disabled="getSelectedCount() === 0 && contacts.length === 0"
-              class="inline-flex items-center justify-center px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 transition-colors"
-            >
-              <ArrowDownTrayIcon class="h-4 w-4 mr-2" />
-              <span class="hidden sm:inline">Exportar ({{ getSelectedCount() || contacts.length }})</span>
-              <span class="sm:hidden">Exportar</span>
-        </button>
-            <button
-              @click="showNewContactModal = true"
-              class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 transition-colors"
-            >
-              <PlusIcon class="h-4 w-4 mr-2" />
-              Nuevo Usuario
-            </button>
-      </div>
-    </div>
-            </div>
-            </div>
-
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
-      <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 lg:gap-8">
-        <!-- Filtros y Etiquetas -->
-        <div class="lg:col-span-1 space-y-6">
-          <!-- Búsqueda -->
-          <div class="bg-white shadow-sm rounded-xl border border-gray-200 p-4">
-            <h3 class="text-sm font-semibold text-gray-900 mb-3">Búsqueda</h3>
-            <div class="relative">
-              <MagnifyingGlassIcon class="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <input
-                v-model="searchQuery"
-                type="text"
-                placeholder="Buscar contactos..."
-                class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
+  <NuxtLayout name="default">
+    <div>
+      <!-- Page Header -->
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
+        <div>
+          <h1 class="text-3xl font-bold text-gray-900">Contactos</h1>
+          <p class="mt-2 text-gray-600">Gestiona tu base de datos de usuarios y contactos</p>
+        </div>
+        <div class="mt-4 sm:mt-0">
+          <button 
+            @click="showAddModal = true"
+            class="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+            </svg>
+            Nuevo Contacto
+          </button>
         </div>
       </div>
 
-          <!-- Etiquetas -->
-          <div class="bg-white shadow-sm rounded-xl border border-gray-200 p-4">
-            <div class="flex justify-between items-center mb-3">
-              <h3 class="text-sm font-medium text-gray-900">Etiquetas</h3>
-              <button
-                @click="showNewTagModal = true"
-                class="text-blue-600 hover:text-blue-800"
-              >
-                <PlusIcon class="h-4 w-4" />
-              </button>
+      <!-- Stats Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+        <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+          <div class="flex items-center">
+            <div class="p-2 bg-blue-100 rounded-lg">
+              <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+              </svg>
             </div>
-            <div class="space-y-2">
-              <label class="flex items-center">
-                <input
-                  v-model="selectedTags"
-                  value=""
-                  type="checkbox"
-                  class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                />
-                <span class="ml-2 text-sm text-gray-700">Todos ({{ realStats.total.toLocaleString() }})</span>
-              </label>
-              <label
-                v-for="tag in tags"
-                :key="tag.id"
-                class="flex items-center"
-              >
-                <input
-                  v-model="selectedTags"
-                  :value="tag.id"
-                  type="checkbox"
-                  class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                />
-                <span
-                  class="ml-2 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium"
-                  :style="{ backgroundColor: tag.color + '20', color: tag.color }"
-                >
-                  {{ tag.name }} ({{ getContactCountByTag(tag.id) }})
-                </span>
-              </label>
-        </div>
-      </div>
-
-          <!-- Estadísticas -->
-          <div class="bg-white shadow-sm rounded-xl border border-gray-200 p-4">
-            <h3 class="text-sm font-medium text-gray-900 mb-3">Estadísticas</h3>
-            <div class="space-y-3">
-              <div class="flex justify-between">
-                <span class="text-sm text-gray-600">Total Usuarios</span>
-                <span class="text-sm font-medium">{{ realStats.total.toLocaleString() }}</span>
+            <div class="ml-3">
+              <p class="text-sm font-medium text-gray-600">Total</p>
+              <p class="text-xl font-semibold text-gray-900">{{ stats.total }}</p>
             </div>
-              <div class="flex justify-between">
-                <span class="text-sm text-gray-600">Con Email</span>
-                <span class="text-sm font-medium text-green-600">{{ realStats.withEmail.toLocaleString() }}</span>
-            </div>
-              <div class="flex justify-between">
-                <span class="text-sm text-gray-600">Sin Email</span>
-                <span class="text-sm font-medium text-yellow-600">{{ realStats.withoutEmail.toLocaleString() }}</span>
           </div>
-              <div class="flex justify-between">
-                <span class="text-sm text-gray-600">Con Balance</span>
-                <span class="text-sm font-medium text-blue-600">{{ realStats.withBalance.toLocaleString() }}</span>
         </div>
-              <div class="flex justify-between">
-                <span class="text-sm text-gray-600">Con Teléfono</span>
-                <span class="text-sm font-medium text-purple-600">{{ realStats.withPhone.toLocaleString() }}</span>
-      </div>
+        <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+          <div class="flex items-center">
+            <div class="p-2 bg-green-100 rounded-lg">
+              <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+            </div>
+            <div class="ml-3">
+              <p class="text-sm font-medium text-gray-600">Verificados</p>
+              <p class="text-xl font-semibold text-gray-900">{{ stats.verified }}</p>
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
-
-        <!-- Lista de Contactos -->
-        <div class="lg:col-span-3">
-          <div class="bg-white shadow-sm rounded-xl border border-gray-200">
-            <!-- Toolbar -->
-            <div class="px-6 py-4 border-b border-gray-200">
-              <div class="flex justify-between items-center">
-                <div class="flex items-center space-x-4">
-                  <label class="flex items-center">
-              <input
-                      data-select-all="true"
-                      @change="toggleSelectAll"
-                      type="checkbox"
-                      class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                    />
-                    <span class="ml-2 text-sm text-gray-700">
-                      Seleccionar todos ({{ filteredContacts.length }})
-                    </span>
-                  </label>
-                  
-                  <div v-if="getSelectedCount() > 0" class="flex items-center space-x-2" data-action-bar>
-                    <span class="text-sm text-gray-500" data-selected-count>{{ getSelectedCount() }}</span> seleccionados
-                    <button
-                      @click="bulkAddTag"
-                      class="text-blue-600 hover:text-blue-800 text-sm"
-                    >
-                      Agregar Etiqueta
-                    </button>
-                    <button
-                      @click="bulkRemoveTag"
-                      class="text-orange-600 hover:text-orange-800 text-sm"
-                    >
-                      Quitar Etiqueta
-                    </button>
-                    <button
-                      @click="sendEmailToSelected"
-                      class="text-blue-600 hover:text-blue-800 text-sm"
-                    >
-                      📧 Enviar Email
-                    </button>
-                    <button
-                      @click="bulkDelete"
-                      class="text-red-600 hover:text-red-800 text-sm"
-                    >
-                      Eliminar
-                    </button>
-      </div>
-    </div>
-
-          <div class="flex items-center space-x-2">
-                  <select
-                    v-model="sortBy"
-                    class="text-sm border border-gray-300 rounded-md px-3 py-1"
-                  >
-                    <option value="name">Ordenar por Nombre</option>
-                    <option value="email">Ordenar por Email</option>
-                    <option value="created_at">Ordenar por Fecha</option>
-                    <option value="status">Ordenar por Estado</option>
-                  </select>
-            <button
-                    @click="sortOrder = sortOrder === 'asc' ? 'desc' : 'asc'"
-                    class="p-1 text-gray-400 hover:text-gray-600"
-            >
-                    <ArrowUpIcon v-if="sortOrder === 'asc'" class="h-4 w-4" />
-                    <ArrowDownIcon v-else class="h-4 w-4" />
-            </button>
+        <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+          <div class="flex items-center">
+            <div class="p-2 bg-yellow-100 rounded-lg">
+              <svg class="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+              </svg>
+            </div>
+            <div class="ml-3">
+              <p class="text-sm font-medium text-gray-600">Pendientes</p>
+              <p class="text-xl font-semibold text-gray-900">{{ stats.pending }}</p>
+            </div>
+          </div>
+        </div>
+        <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+          <div class="flex items-center">
+            <div class="p-2 bg-purple-100 rounded-lg">
+              <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"/>
+              </svg>
+            </div>
+            <div class="ml-3">
+              <p class="text-sm font-medium text-gray-600">Balance Promedio</p>
+              <p class="text-xl font-semibold text-gray-900">${{ stats.avgBalance.toFixed(2) }}</p>
+            </div>
           </div>
         </div>
       </div>
 
-            <!-- Tabla de Contactos -->
-      <div class="overflow-x-auto">
-              <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
-            <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                <input
-                  data-select-all="true"
-                  @change="toggleSelectAll"
-                  type="checkbox"
-                  class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                />
-              </th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Contacto
-                    </th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Estado
-                    </th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Etiquetas
-                    </th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Fecha
-                    </th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Acciones
-                    </th>
-            </tr>
-          </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
-                  <tr
-                    v-for="contact in paginatedContacts"
-                    :key="contact.idPerson"
-                    class="hover:bg-gray-50"
-                  >
-                    <td class="px-6 py-4 whitespace-nowrap">
-                <input
-                  :data-contact-id="contact.idPerson"
-                  @change="toggleContactSelection(contact.idPerson)"
-                  type="checkbox"
-                  class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                />
-              </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                      <div class="flex items-center">
-                        <div class="flex-shrink-0 h-10 w-10">
-                          <div class="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
-                            <UserIcon class="h-5 w-5 text-gray-600" />
-                          </div>
-                        </div>
-                        <div class="ml-4">
-                <div class="text-sm font-medium text-gray-900">
-                            {{ contact.firstName }} {{ contact.lastName }}
-                            <span v-if="contact.gender" class="ml-2 text-xs text-gray-400">({{ getGenderLabel(contact.gender) }})</span>
-                </div>
-                          <div class="text-sm text-gray-500">{{ contact.email }}</div>
-                          <div v-if="contact.phone" class="text-sm text-gray-500">📱 {{ contact.phone }}</div>
-                          <div v-if="contact.birthday" class="text-sm text-gray-500">🎂 {{ formatDate(contact.birthday) }}</div>
-                          <div v-if="contact.balance > 0" class="text-sm text-green-600">💰 ${{ contact.balance }}</div>
-                </div>
-                </div>
-              </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                <span
-                        :class="{
-                          'bg-green-100 text-green-800': contact.emailVerified,
-                          'bg-yellow-100 text-yellow-800': !contact.emailVerified && contact.is_active,
-                          'bg-red-100 text-red-800': !contact.is_active
-                        }"
-                        class="inline-flex px-2 py-1 text-xs font-semibold rounded-full"
-                      >
-                        {{ getContactStatus(contact) }}
-                </span>
-              </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                <div class="flex flex-wrap gap-1">
-                  <span
-                          v-for="tag in getContactTags(contact.idPerson)"
-                    :key="tag.id"
-                          class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium"
-                    :style="{ backgroundColor: tag.color + '20', color: tag.color }"
-                  >
-                    {{ tag.name }}
-                  </span>
-                </div>
-              </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {{ formatDate(contact.created_at) }}
-              </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <div class="flex space-x-2">
-                  <button
-                    @click="editContact(contact)"
-                          class="text-blue-600 hover:text-blue-900"
-                  >
-                          <PencilIcon class="h-4 w-4" />
-                  </button>
-                  <button
-                          @click="sendEmailToContact(contact)"
-                          class="text-green-600 hover:text-green-900"
-                        >
-                          <EnvelopeIcon class="h-4 w-4" />
-                  </button>
-                  <button
-                          @click="deleteContact(contact.idPerson)"
-                          class="text-red-600 hover:text-red-900"
-                  >
-                          <TrashIcon class="h-4 w-4" />
-                  </button>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-            <!-- Paginación -->
-            <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
-              <div class="flex-1 flex justify-between sm:hidden">
-            <button
-              @click="previousPage"
-              :disabled="currentPage === 1"
-                  class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
-            >
-              Anterior
-            </button>
-            <button
-              @click="nextPage"
-              :disabled="currentPage === totalPages"
-                  class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
-            >
-              Siguiente
-            </button>
+      <!-- Contacts Table -->
+      <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+        <div v-if="loading" class="p-8 text-center">
+          <div class="inline-flex items-center px-4 py-2 text-sm text-gray-600">
+            <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-gray-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            Cargando contactos...
           </div>
-              <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-                <div>
-                  <p class="text-sm text-gray-700">
-                    Mostrando <span class="font-medium">{{ startIndex }}</span> a <span class="font-medium">{{ endIndex }}</span> de <span class="font-medium">{{ totalContacts.toLocaleString() }}</span> usuarios
-                    </p>
+        </div>
+
+        <div v-else-if="contacts.length === 0" class="p-8 text-center">
+          <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+          </svg>
+          <h3 class="mt-2 text-sm font-medium text-gray-900">Sin contactos</h3>
+          <p class="mt-1 text-sm text-gray-500">Agrega tu primer contacto para comenzar</p>
+        </div>
+
+        <div v-else class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+              <tr>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contacto</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">País</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Balance</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">KYC</th>
+                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+              </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+              <tr v-for="contact in contacts" :key="contact.idPerson" class="hover:bg-gray-50">
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="flex items-center">
+                    <div class="flex-shrink-0 h-10 w-10">
+                      <div class="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
+                        <span class="text-sm font-medium text-blue-600">
+                          {{ getInitials(contact.firstName, contact.lastName) }}
+                        </span>
+                      </div>
+                    </div>
+                    <div class="ml-4">
+                      <div class="text-sm font-medium text-gray-900">
+                        {{ contact.firstName }} {{ contact.lastName }}
+                      </div>
+                      <div class="text-sm text-gray-500">{{ contact.username }}</div>
+                    </div>
                   </div>
-                <div>
-                  <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
-                    <button
-                      @click="previousPage"
-                      :disabled="currentPage === 1"
-                      class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
-                    >
-                      <ChevronLeftIcon class="h-5 w-5" />
-                    </button>
-                <button
-                      v-for="page in visiblePages"
-                      :key="page"
-                      @click="goToPage(page)"
-                      :class="{
-                        'bg-blue-50 border-blue-500 text-blue-600': page === currentPage,
-                        'bg-white border-gray-300 text-gray-500 hover:bg-gray-50': page !== currentPage
-                      }"
-                      class="relative inline-flex items-center px-4 py-2 border text-sm font-medium"
-                    >
-                      {{ page }}
-                </button>
-                <button
-                      @click="nextPage"
-                      :disabled="currentPage === totalPages"
-                      class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
-                    >
-                      <ChevronRightIcon class="h-5 w-5" />
-                </button>
-                  </nav>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ contact.email }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ contact.CountryBirthday }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  ${{ parseFloat(contact.Balance || 0).toFixed(2) }}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span 
+                    class="inline-flex px-2 py-1 text-xs font-semibold rounded-full"
+                    :class="getKycStatusClass(contact.kyc_status)"
+                  >
+                    {{ contact.kyc_status || 'verified' }}
+                  </span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                  <button 
+                    @click="editContact(contact)"
+                    class="text-blue-600 hover:text-blue-900 mr-3"
+                  >
+                    Editar
+                  </button>
+                  <button 
+                    @click="deleteContact(contact)"
+                    class="text-red-600 hover:text-red-900"
+                  >
+                    Eliminar
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Add/Edit Contact Modal -->
+    <div v-if="showAddModal || showEditModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+      <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
+        <div class="mt-3">
+          <h3 class="text-lg font-medium text-gray-900 mb-4">
+            {{ showAddModal ? 'Nuevo Contacto' : 'Editar Contacto' }}
+          </h3>
+          
+          <form @submit.prevent="showAddModal ? addContact() : updateContact()" class="space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
+                <input 
+                  v-model="contactForm.firstName"
+                  type="text"
+                  required
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Apellido</label>
+                <input 
+                  v-model="contactForm.lastName"
+                  type="text"
+                  required
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                <input 
+                  v-model="contactForm.email"
+                  type="email"
+                  required
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Username</label>
+                <input 
+                  v-model="contactForm.username"
+                  type="text"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">País</label>
+                <select 
+                  v-model="contactForm.CountryBirthday"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="">Seleccionar país</option>
+                  <option value="Colombia">Colombia</option>
+                  <option value="Venezuela">Venezuela</option>
+                  <option value="Ecuador">Ecuador</option>
+                  <option value="Peru">Perú</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Género</label>
+                <select 
+                  v-model="contactForm.Gender"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="">Seleccionar género</option>
+                  <option value="M">Masculino</option>
+                  <option value="F">Femenino</option>
+                  <option value="Other">Otro</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Balance</label>
+                <input 
+                  v-model="contactForm.Balance"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Fecha de Nacimiento</label>
+                <input 
+                  v-model="contactForm.birthday"
+                  type="date"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
               </div>
             </div>
-          </div>
+            
+            <div class="flex justify-end space-x-3 pt-4">
+              <button 
+                type="button"
+                @click="closeModal"
+                class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md"
+              >
+                Cancelar
+              </button>
+              <button 
+                type="submit"
+                :disabled="saving"
+                class="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md disabled:opacity-50"
+              >
+                {{ saving ? 'Guardando...' : (showAddModal ? 'Crear' : 'Actualizar') }}
+              </button>
+            </div>
+          </form>
         </div>
       </div>
     </div>
-    </div>
-
-    <!-- Modal Nuevo Contacto -->
-    <ContactModal
-      v-if="showNewContactModal"
-      :contact="editingContact"
-      :tags="tags"
-      @close="showNewContactModal = false; editingContact = null"
-      @save="saveContact"
-    />
-
-    <!-- Modal Nueva Etiqueta -->
-    <TagModal
-      v-if="showNewTagModal"
-      @close="showNewTagModal = false"
-      @save="saveTag"
-    />
-
-    <!-- Modal Importar -->
-    <ImportModal
-      v-if="showImportModal"
-      @close="showImportModal = false"
-      @import="handleImport"
-    />
-  </div>
+  </NuxtLayout>
 </template>
 
-<script setup lang="ts">
-import {
-  PlusIcon,
-  MagnifyingGlassIcon,
-  UserIcon,
-  PencilIcon,
-  TrashIcon,
-  EnvelopeIcon,
-  ArrowUpTrayIcon,
-  ArrowDownTrayIcon,
-  ArrowUpIcon,
-  ArrowDownIcon,
-  ChevronLeftIcon,
-  ChevronRightIcon
-} from '@heroicons/vue/24/outline'
+<script setup>
+import { ref, onMounted } from 'vue'
 
-// Proteger la ruta
-definePageMeta({ middleware: 'admin' })
-
-// Composables
-const { supabase } = useSupabaseMaster()
-
-// Estado
-const contacts = ref([])
-const tags = ref([])
-const contactTags = ref([])
-const loading = ref(false)
-const searchQuery = ref('')
-const selectedTags = ref([])
-// Array simple sin reactividad para evitar recursión
-let selectedContactsArray = []
-const sortBy = ref('name')
-const sortOrder = ref('asc')
-const currentPage = ref(1)
-const itemsPerPage = ref(20)
-const totalContacts = ref(0)
-const selectedStatus = ref('all')
-const realStats = ref({
-  total: 0,
-  withEmail: 0,
-  withoutEmail: 0,
-  withBalance: 0,
-  withPhone: 0
+// Define page meta with middleware
+definePageMeta({
+  middleware: 'auth'
 })
 
-const tagCounts = ref({})
-
-// Modales
-const showNewContactModal = ref(false)
-const showNewTagModal = ref(false)
-const showImportModal = ref(false)
+// Reactive data
+const contacts = ref([])
+const loading = ref(true)
+const saving = ref(false)
+const showAddModal = ref(false)
+const showEditModal = ref(false)
 const editingContact = ref(null)
 
-// Computed
-const filteredContacts = computed(() => {
-  let filtered = contacts.value
-
-  // Filtrar por búsqueda
-  if (searchQuery.value) {
-    const query = searchQuery.value.toLowerCase()
-    filtered = filtered.filter(contact =>
-      contact.firstName?.toLowerCase().includes(query) ||
-      contact.lastName?.toLowerCase().includes(query) ||
-      contact.email?.toLowerCase().includes(query) ||
-      contact.phone?.toLowerCase().includes(query)
-    )
-  }
-
-  // Filtrar por etiquetas
-  if (selectedTags.value.length > 0 && !selectedTags.value.includes('')) {
-    filtered = filtered.filter(contact => {
-      const contactTagIds = getContactTags(contact.idPerson).map(tag => tag.id)
-      return selectedTags.value.some(tagId => contactTagIds.includes(tagId))
-    })
-  }
-
-  // Ordenar
-  filtered.sort((a, b) => {
-    let aValue, bValue
-    
-    switch (sortBy.value) {
-      case 'name':
-        aValue = `${a.firstName} ${a.lastName}`.toLowerCase()
-        bValue = `${b.firstName} ${b.lastName}`.toLowerCase()
-        break
-      case 'email':
-        aValue = a.email?.toLowerCase() || ''
-        bValue = b.email?.toLowerCase() || ''
-        break
-      case 'created_at':
-        aValue = new Date(a.created_at)
-        bValue = new Date(b.created_at)
-        break
-      case 'status':
-        aValue = getContactStatus(a)
-        bValue = getContactStatus(b)
-        break
-      default:
-        aValue = a[sortBy.value]
-        bValue = b[sortBy.value]
-    }
-
-    if (sortOrder.value === 'asc') {
-      return aValue > bValue ? 1 : -1
-  } else {
-      return aValue < bValue ? 1 : -1
-    }
-  })
-
-  return filtered
+// Stats
+const stats = ref({
+  total: 0,
+  verified: 0,
+  pending: 0,
+  avgBalance: 0
 })
 
-const paginatedContacts = computed(() => {
-  // Los datos ya vienen paginados del servidor, no necesitamos slice
-  return contacts.value
+// Form data
+const contactForm = ref({
+  firstName: '',
+  lastName: '',
+  email: '',
+  username: '',
+  CountryBirthday: '',
+  Gender: '',
+  birthday: '',
+  Balance: 0,
+  kyc_status: 'verified', // Todos los emails USERS son verificados
+  kyc_level: 'basic'
 })
 
-const totalPages = computed(() => {
-  return Math.ceil(totalContacts.value / itemsPerPage.value)
-})
-
-const visiblePages = computed(() => {
-  const pages = []
-  const start = Math.max(1, currentPage.value - 2)
-  const end = Math.min(totalPages.value, currentPage.value + 2)
-  
-  for (let i = start; i <= end; i++) {
-    pages.push(i)
-  }
-  
-  return pages
-})
-
-const startIndex = computed(() => {
-  return (currentPage.value - 1) * itemsPerPage.value + 1
-})
-
-const endIndex = computed(() => {
-  return Math.min(currentPage.value * itemsPerPage.value, totalContacts.value)
-})
-
-// Las estadísticas ahora se cargan directamente desde realStats
-
-// Funciones simples para manejo de selección sin reactividad
-const isContactSelected = (contactId) => {
-  return selectedContactsArray.includes(contactId)
+// Methods
+const getInitials = (firstName, lastName) => {
+  const first = firstName ? firstName.charAt(0).toUpperCase() : ''
+  const last = lastName ? lastName.charAt(0).toUpperCase() : ''
+  return first + last || 'N/A'
 }
 
-const isAllSelected = () => {
-  const currentContacts = contacts.value
-  return currentContacts.length > 0 && selectedContactsArray.length === currentContacts.length
+const getKycStatusClass = (status) => {
+  // Todos los usuarios USERS son verificados por defecto
+  return 'bg-green-100 text-green-800'
 }
 
-const getSelectedCount = () => {
-  return selectedContactsArray.length
-}
-
-// Función para actualizar la UI manualmente
-const updateSelectionUI = () => {
-  // Forzar actualización de todos los checkboxes
-  const checkboxes = document.querySelectorAll('input[type="checkbox"][data-contact-id]')
-  checkboxes.forEach(checkbox => {
-    const contactId = parseInt(checkbox.getAttribute('data-contact-id'))
-    checkbox.checked = selectedContactsArray.includes(contactId)
-  })
-  
-  // Actualizar checkboxes de "seleccionar todos"
-  const selectAllCheckboxes = document.querySelectorAll('input[type="checkbox"][data-select-all]')
-  selectAllCheckboxes.forEach(checkbox => {
-    checkbox.checked = isAllSelected()
-  })
-  
-  // Actualizar contadores
-  const counters = document.querySelectorAll('[data-selected-count]')
-  counters.forEach(counter => {
-    counter.textContent = getSelectedCount()
-  })
-  
-  // Mostrar/ocultar barra de acciones
-  const actionBar = document.querySelector('[data-action-bar]')
-  if (actionBar) {
-    actionBar.style.display = getSelectedCount() > 0 ? 'flex' : 'none'
-  }
-}
-
-// Métodos
 const loadContacts = async () => {
-  loading.value = true
   try {
-    // Cargar usuarios con paginación para manejar 112.6K registros
-    const from = (currentPage.value - 1) * itemsPerPage.value
-    const to = from + itemsPerPage.value - 1
+    loading.value = true
+    const { useSupabase } = await import('~/composables/useSupabase')
+    const supabase = useSupabase()
     
-    let query = supabase
+    const { data, error, count } = await supabase
       .from('USERS')
-      .select(`
-        idPerson,
-        firstName,
-        lastName,
-        email,
-        phoneNumber,
-        Gender,
-        birthday,
-        Balance,
-        kyc_status,
-        kyc_level
-      `, { count: 'exact' })
-      .range(from, to)
-      .order('idPerson', { ascending: false })
-
-    // Aplicar filtros si existen
-    if (searchQuery.value.trim()) {
-      const search = searchQuery.value.trim()
-      query = query.or(`firstName.ilike.%${search}%,lastName.ilike.%${search}%,email.ilike.%${search}%`)
-    }
-
-    if (selectedStatus.value && selectedStatus.value !== 'all') {
-      if (selectedStatus.value === 'with_email') {
-        query = query.not('email', 'is', null).neq('email', '')
-      } else if (selectedStatus.value === 'without_email') {
-        query = query.or('email.is.null,email.eq.')
-      } else if (selectedStatus.value === 'with_balance') {
-        query = query.gt('Balance', 0)
-      }
-    }
-
-    const { data, error, count } = await query
-
-    if (error) throw error
+      .select('*', { count: 'exact' })
+      .limit(50)
     
-    // Actualizar total de registros para paginación
-    totalContacts.value = count || 0
+    if (error) {
+      console.error('Error loading contacts:', error)
+      contacts.value = []
+      return
+    }
     
-    // Transformar los datos para que coincidan con la interfaz esperada
-    contacts.value = (data || []).map(user => ({
-      idPerson: user.idPerson,
-      firstName: user.firstName || '',
-      lastName: user.lastName || '',
-      email: user.email || '',
-      phone: user.phoneNumber || '',
-      company: '', // No disponible en USERS
-      position: '', // No disponible en USERS
-      notes: '', // No disponible en USERS
-      is_active: true, // Asumir activo por defecto
-      emailVerified: !!user.email, // Si tiene email, asumir verificado
-      created_at: new Date().toISOString(), // Usar fecha actual como fallback
-      gender: user.Gender,
-      birthday: user.birthday,
-      balance: user.Balance || 0,
-      kyc_status: user.kyc_status,
-      kyc_level: user.kyc_level
-    }))
+    contacts.value = data || []
+    await loadStats()
+    
   } catch (error) {
-    console.error('Error cargando contactos:', error)
+    console.error('Error:', error)
+    contacts.value = []
   } finally {
     loading.value = false
   }
 }
 
-const loadRealStats = async () => {
+const loadStats = async () => {
   try {
-    // Cargar estadísticas reales de toda la base de datos
-    const [totalResult, withEmailResult, withBalanceResult, withPhoneResult] = await Promise.all([
-      // Total de usuarios
-      supabase
-        .from('USERS')
-        .select('idPerson', { count: 'exact', head: true }),
-      
-      // Usuarios con email
-      supabase
-        .from('USERS')
-        .select('idPerson', { count: 'exact', head: true })
-        .not('email', 'is', null)
-        .neq('email', ''),
-      
-      // Usuarios con balance
-      supabase
-        .from('USERS')
-        .select('idPerson', { count: 'exact', head: true })
-        .gt('Balance', 0),
-      
-      // Usuarios con teléfono
-      supabase
-        .from('USERS')
-        .select('idPerson', { count: 'exact', head: true })
-        .not('phoneNumber', 'is', null)
-        .neq('phoneNumber', '')
-    ])
-
-    if (totalResult.error) throw totalResult.error
-    if (withEmailResult.error) throw withEmailResult.error
-    if (withBalanceResult.error) throw withBalanceResult.error
-    if (withPhoneResult.error) throw withPhoneResult.error
-
-    realStats.value = {
-      total: totalResult.count || 0,
-      withEmail: withEmailResult.count || 0,
-      withoutEmail: (totalResult.count || 0) - (withEmailResult.count || 0),
-      withBalance: withBalanceResult.count || 0,
-      withPhone: withPhoneResult.count || 0
+    const { useSupabase } = await import('~/composables/useSupabase')
+    const supabase = useSupabase()
+    
+    // Total count
+    const { count: total } = await supabase
+      .from('USERS')
+      .select('*', { count: 'exact', head: true })
+    
+    // Average balance
+    const { data: balanceData } = await supabase
+      .from('USERS')
+      .select('Balance')
+      .not('Balance', 'is', null)
+    
+    const avgBalance = balanceData && balanceData.length > 0 
+      ? balanceData.reduce((sum, item) => sum + parseFloat(item.Balance || 0), 0) / balanceData.length
+      : 0
+    
+    stats.value = {
+      total: total || 0,
+      verified: total || 0, // Todos son verificados
+      pending: 0, // Ninguno pendiente
+      avgBalance: avgBalance
     }
-
-    // Actualizar también el total para la paginación
-    totalContacts.value = realStats.value.total
   } catch (error) {
-    console.error('Error cargando estadísticas:', error)
+    console.error('Error loading stats:', error)
+    stats.value = {
+      total: 0,
+      verified: 0,
+      pending: 0,
+      avgBalance: 0
+    }
   }
 }
 
-const loadTags = async () => {
+const addContact = async () => {
   try {
+    saving.value = true
+    const { useSupabase } = await import('~/composables/useSupabase')
+    const supabase = useSupabase()
+    
+    // Set verified status for all new contacts
+    contactForm.value.kyc_status = 'verified'
+    
     const { data, error } = await supabase
-      .from('contact_lists')
-      .select('*')
-      .order('name')
-
-    if (error) throw error
-    tags.value = data || []
+      .from('USERS')
+      .insert([contactForm.value])
     
-    // Cargar conteos reales para cada etiqueta
-    await loadTagCounts()
+    if (error) {
+      console.error('Error adding contact:', error)
+      alert('Error al crear el contacto: ' + error.message)
+      return
+    }
+    
+    alert('Contacto creado exitosamente')
+    closeModal()
+    loadContacts()
   } catch (error) {
-    console.error('Error cargando etiquetas:', error)
+    console.error('Error:', error)
+    alert('Error al crear el contacto')
+  } finally {
+    saving.value = false
   }
 }
 
-const loadTagCounts = async () => {
-  try {
-    // Cargar conteos de todas las etiquetas en paralelo para mejor rendimiento
-    const countPromises = tags.value.map(async (tag) => {
-      const { count, error } = await supabase
-        .from('contact_list_members')
-        .select('contact_id', { count: 'exact', head: true })
-        .eq('list_id', tag.id)
-      
-      if (error) {
-        console.error(`Error contando etiqueta ${tag.name}:`, error)
-        return { tagId: tag.id, count: 0 }
-      }
-      
-      return { tagId: tag.id, count: count || 0 }
-    })
-    
-    const results = await Promise.all(countPromises)
-    
-    // Convertir resultados a objeto
-    const counts = {}
-    results.forEach(({ tagId, count }) => {
-      counts[tagId] = count
-    })
-    
-    tagCounts.value = counts
-  } catch (error) {
-    console.error('Error cargando conteos de etiquetas:', error)
-  }
-}
-
-const getContactCountByTag = (tagId) => {
-  return (tagCounts.value[tagId] || 0).toLocaleString()
-}
-
-const loadContactTags = async () => {
-  try {
-    const { data, error } = await supabase
-      .from('contact_list_members')
-      .select('*')
-
-    if (error) throw error
-    contactTags.value = data || []
-  } catch (error) {
-    console.error('Error cargando relaciones contacto-etiqueta:', error)
-  }
-}
-
-const getContactTags = (contactId) => {
-  const contactTagIds = contactTags.value
-    .filter(ct => ct.contact_id === contactId)
-    .map(ct => ct.list_id)
-  
-  return tags.value.filter(tag => contactTagIds.includes(tag.id))
-}
-
-
-
-const getContactStatus = (contact) => {
-  if (!contact.is_active) return 'Inválido'
-  if (contact.emailVerified) return 'Verificado'
-  return 'Sin Verificar'
-}
-
-const formatDate = (dateString) => {
-  return new Date(dateString).toLocaleDateString('es-ES', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric'
-  })
-}
-
-const getGenderLabel = (gender) => {
-  switch (gender) {
-    case 'M': return 'Masculino'
-    case 'F': return 'Femenino'
-    case 'O': return 'Otro'
-    default: return gender
-  }
-}
-
-// Paginación
-const goToPage = (page) => {
-  currentPage.value = page
-}
-
-const nextPage = () => {
-  if (currentPage.value < totalPages.value) {
-    currentPage.value++
-  }
-}
-
-const previousPage = () => {
-  if (currentPage.value > 1) {
-    currentPage.value--
-  }
-}
-
-// CRUD Contactos
 const editContact = (contact) => {
-  editingContact.value = { ...contact }
-  showNewContactModal.value = true
+  editingContact.value = contact
+  contactForm.value = { ...contact }
+  showEditModal.value = true
 }
 
-const saveContact = async (contactData) => {
+const updateContact = async () => {
   try {
-    // Preparar datos para la tabla USERS
-    const userData = {
-      firstName: contactData.firstName,
-      lastName: contactData.lastName,
-      email: contactData.email,
-      phoneNumber: contactData.phone,
-      Gender: contactData.gender || null,
-      birthday: contactData.birthday || null
-    }
-
-    if (contactData.idPerson) {
-      // Actualizar usuario existente
-      const { error } = await supabase
-        .from('USERS')
-        .update(userData)
-        .eq('idPerson', contactData.idPerson)
-      
-      if (error) throw error
-      
-      const index = contacts.value.findIndex(c => c.idPerson === contactData.idPerson)
-      if (index !== -1) {
-        contacts.value[index] = { ...contacts.value[index], ...contactData }
-      }
-    } else {
-      // Crear nuevo usuario
-      const { data, error } = await supabase
-        .from('USERS')
-        .insert([userData])
-        .select()
-      
-      if (error) throw error
-      if (data && data[0]) {
-        // Transformar el nuevo usuario al formato esperado
-        const newContact = {
-          idPerson: data[0].idPerson,
-          firstName: data[0].firstName || '',
-          lastName: data[0].lastName || '',
-          email: data[0].email || '',
-          phone: data[0].phoneNumber || '',
-          company: '',
-          position: '',
-          notes: '',
-          is_active: true,
-          emailVerified: !!data[0].email,
-          created_at: new Date().toISOString(),
-          gender: data[0].Gender,
-          birthday: data[0].birthday,
-          balance: data[0].Balance || 0,
-          kyc_status: data[0].kyc_status,
-          kyc_level: data[0].kyc_level
-        }
-        contacts.value.unshift(newContact)
-      }
-    }
+    saving.value = true
+    const { useSupabase } = await import('~/composables/useSupabase')
+    const supabase = useSupabase()
     
-    showNewContactModal.value = false
-    editingContact.value = null
-  } catch (error) {
-    console.error('Error guardando contacto:', error)
-    alert('Error al guardar el contacto')
-  }
-}
-
-const deleteContact = async (contactId) => {
-  if (!confirm('¿Estás seguro de que deseas eliminar este usuario?')) return
-  
-  try {
-    const { error } = await supabase
-      .from('USERS')
-      .delete()
-      .eq('idPerson', contactId)
+    // Ensure verified status
+    contactForm.value.kyc_status = 'verified'
     
-    if (error) throw error
-    
-    contacts.value = contacts.value.filter(c => c.idPerson !== contactId)
-    const index = selectedContactsArray.indexOf(contactId)
-    if (index > -1) {
-      selectedContactsArray.splice(index, 1)
-      updateSelectionUI()
-    }
-  } catch (error) {
-    console.error('Error eliminando usuario:', error)
-    alert('Error al eliminar el usuario')
-  }
-}
-
-// CRUD Etiquetas
-const saveTag = async (tagData) => {
-  try {
     const { data, error } = await supabase
-      .from('contact_lists')
-      .insert([{
-        name: tagData.name,
-        description: tagData.description,
-        color: tagData.color
-      }])
-      .select()
+      .from('USERS')
+      .update(contactForm.value)
+      .eq('idPerson', editingContact.value.idPerson)
     
-    if (error) throw error
-    if (data && data[0]) {
-      tags.value.push(data[0])
+    if (error) {
+      console.error('Error updating contact:', error)
+      alert('Error al actualizar el contacto: ' + error.message)
+      return
     }
     
-    showNewTagModal.value = false
+    alert('Contacto actualizado exitosamente')
+    closeModal()
+    loadContacts()
   } catch (error) {
-    console.error('Error guardando etiqueta:', error)
-    alert('Error al guardar la etiqueta')
+    console.error('Error:', error)
+    alert('Error al actualizar el contacto')
+  } finally {
+    saving.value = false
   }
 }
 
-// Operaciones masivas
-const bulkAddTag = async () => {
-  // Implementar modal para seleccionar etiqueta
-  // Implementar lógica para agregar etiqueta
-}
-
-const bulkRemoveTag = async () => {
-  // Implementar modal para seleccionar etiqueta a quitar
-  // Implementar lógica para quitar etiqueta
-}
-
-const bulkDelete = async () => {
-  if (!confirm(`¿Estás seguro de que deseas eliminar ${selectedContactsArray.length} usuarios?`)) return
+const deleteContact = async (contact) => {
+  if (!confirm('¿Estás seguro de que quieres eliminar este contacto?')) {
+    return
+  }
   
   try {
+    const { useSupabase } = await import('~/composables/useSupabase')
+    const supabase = useSupabase()
+    
     const { error } = await supabase
       .from('USERS')
       .delete()
-      .in('idPerson', selectedContactsArray)
+      .eq('idPerson', contact.idPerson)
     
-    if (error) throw error
+    if (error) {
+      console.error('Error deleting contact:', error)
+      alert('Error al eliminar el contacto: ' + error.message)
+      return
+    }
     
-    contacts.value = contacts.value.filter(c => !selectedContactsArray.includes(c.idPerson))
-    selectedContactsArray.length = 0
-    updateSelectionUI()
+    alert('Contacto eliminado exitosamente')
+    loadContacts()
   } catch (error) {
-    console.error('Error eliminando usuarios:', error)
-    alert('Error al eliminar los usuarios')
+    console.error('Error:', error)
+    alert('Error al eliminar el contacto')
   }
 }
 
-// Importar/Exportar
-const handleImport = async (importData) => {
-  console.log('Importar datos:', importData)
-  // Implementar lógica de importación
-  await loadContacts()
-}
-
-const exportContacts = () => {
-  const contactsToExport = selectedContactsArray.length > 0 
-    ? contacts.value.filter(c => selectedContactsArray.includes(c.idPerson))
-    : contacts.value
-
-  // Crear CSV
-  const headers = ['Nombre', 'Apellido', 'Email', 'Teléfono', 'Estado', 'Fecha Creación']
-  const csvContent = [
-    headers.join(','),
-    ...contactsToExport.map(contact => [
-      contact.firstName || '',
-      contact.lastName || '',
-      contact.email || '',
-      contact.phone || '',
-      getContactStatus(contact),
-      formatDate(contact.created_at)
-    ].join(','))
-  ].join('\n')
-
-  // Descargar
-  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
-  const link = document.createElement('a')
-  const url = URL.createObjectURL(blob)
-  link.setAttribute('href', url)
-  link.setAttribute('download', `contactos_${new Date().toISOString().split('T')[0]}.csv`)
-  link.style.visibility = 'hidden'
-  document.body.appendChild(link)
-  link.click()
-  document.body.removeChild(link)
-}
-
-const sendEmailToContact = (contact) => {
-  // Redirigir a composer con el contacto pre-seleccionado
-  const name = `${contact.firstName || ''} ${contact.lastName || ''}`.trim() || 'Usuario'
-  const params = new URLSearchParams({
-    to: contact.email,
-    name: name
-  })
-  
-  console.log('📧 Redirigiendo a composer con:', { email: contact.email, name })
-  navigateTo(`/emails/compose?${params.toString()}`)
-}
-
-const toggleContactSelection = (contactId) => {
-  const index = selectedContactsArray.indexOf(contactId)
-  
-  if (index > -1) {
-    // Remover si ya está seleccionado
-    selectedContactsArray.splice(index, 1)
-  } else {
-    // Agregar si no está seleccionado
-    selectedContactsArray.push(contactId)
+const closeModal = () => {
+  showAddModal.value = false
+  showEditModal.value = false
+  editingContact.value = null
+  contactForm.value = {
+    firstName: '',
+    lastName: '',
+    email: '',
+    username: '',
+    CountryBirthday: '',
+    Gender: '',
+    birthday: '',
+    Balance: 0,
+    kyc_status: 'verified',
+    kyc_level: 'basic'
   }
-  
-  // Actualizar UI manualmente
-  updateSelectionUI()
-  
-  console.log('🔍 Contacto toggled:', {
-    contactId,
-    isNowSelected: selectedContactsArray.includes(contactId),
-    totalSelected: selectedContactsArray.length
-  })
 }
 
-const toggleSelectAll = () => {
-  const currentContacts = contacts.value
-  const allSelected = isAllSelected()
-  
-  if (allSelected) {
-    // Deseleccionar todos
-    selectedContactsArray.length = 0
-  } else {
-    // Seleccionar todos los contactos actuales
-    selectedContactsArray.length = 0 // Limpiar primero
-    selectedContactsArray.push(...currentContacts.map(c => c.idPerson))
-  }
-  
-  // Actualizar UI manualmente
-  updateSelectionUI()
-  
-  console.log('🔍 Select all toggled:', {
-    allSelected: !allSelected,
-    totalSelected: selectedContactsArray.length,
-    totalContacts: currentContacts.length
-  })
-}
-
-const sendEmailToSelected = () => {
-  if (selectedContactsArray.length === 0) {
-    alert('Selecciona al menos un contacto')
-    return
-  }
-  
-  // Obtener emails de contactos seleccionados
-  const selectedEmails = contacts.value
-    .filter(contact => selectedContactsArray.includes(contact.idPerson))
-    .map(contact => contact.email)
-    .filter(email => email) // Filtrar emails vacíos
-  
-  if (selectedEmails.length === 0) {
-    alert('Los contactos seleccionados no tienen emails válidos')
-    return
-  }
-  
-  // Redirigir a composer con múltiples destinatarios
-  const params = new URLSearchParams({
-    to: selectedEmails.join(','),
-    subject: `Email para ${selectedEmails.length} contactos`
-  })
-  
-  console.log('📧 Redirigiendo a composer con múltiples destinatarios:', selectedEmails)
-  navigateTo(`/emails/compose?${params.toString()}`)
-}
-
-// Watchers para recargar cuando cambien los filtros
-watch([searchQuery, selectedStatus, currentPage], () => {
+onMounted(() => {
   loadContacts()
-}, { debounce: 300 })
-
-// Inicialización
-onMounted(async () => {
-  await Promise.all([
-    loadRealStats(), // Cargar estadísticas reales primero
-    loadContacts(),
-    loadTags(),
-    loadContactTags()
-  ])
 })
 
-// Watchers
-watch(searchQuery, () => {
-  currentPage.value = 1
-})
-
-watch(selectedTags, () => {
-  currentPage.value = 1
+// Set page title
+useHead({
+  title: 'Contactos - MailPower'
 })
 </script>

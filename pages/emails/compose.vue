@@ -1,526 +1,438 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-    <!-- Header móvil y desktop -->
-    <div class="sticky top-0 z-40 bg-white shadow-sm border-b border-gray-200">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex items-center justify-between h-16">
-          <!-- Navegación izquierda -->
-          <div class="flex items-center space-x-4">
-            <button
-              @click="$router.back()"
-              class="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors"
-            >
-              <ArrowLeftIcon class="h-5 w-5" />
-            </button>
-            <div class="hidden sm:block">
-              <h1 class="text-xl font-semibold text-gray-900">Componer Email</h1>
-            </div>
-          </div>
-
-          <!-- Acciones principales -->
-          <div class="flex items-center space-x-3">
-            <!-- Botón guardar borrador -->
-            <button
-              @click="saveDraft"
-              :disabled="saving"
-              class="hidden sm:inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 transition-colors"
-            >
-              <DocumentIcon class="h-4 w-4 mr-2" />
-              {{ saving ? 'Guardando...' : 'Borrador' }}
-            </button>
-
-            <!-- Botón enviar -->
-            <button
-              @click="sendEmail"
-              :disabled="!canSend || sending"
-              class="inline-flex items-center px-4 py-2 border border-transparent rounded-lg text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 transition-colors shadow-sm"
-            >
-              <PaperAirplaneIcon class="h-4 w-4 mr-2" />
-              {{ sending ? 'Enviando...' : 'Enviar' }}
-            </button>
-
-            <!-- Menú móvil -->
-            <div class="sm:hidden relative">
-              <button
-                @click="showMobileMenu = !showMobileMenu"
-                class="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100"
-              >
-                <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z"/>
-                </svg>
-              </button>
-              
-              <!-- Dropdown móvil -->
-              <div v-if="showMobileMenu" class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1">
-                <button
-                  @click="saveDraft; showMobileMenu = false"
-                  class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                >
-                  Guardar Borrador
-                </button>
-                <button
-                  @click="toggleContactSelector; showMobileMenu = false"
-                  class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                >
-                  Seleccionar Contactos
-                </button>
-              </div>
-            </div>
-          </div>
+  <NuxtLayout name="default">
+    <div>
+      <!-- Page Header -->
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
+        <div>
+          <h1 class="text-3xl font-bold text-gray-900">Componer Email</h1>
+          <p class="mt-2 text-gray-600">Crea y envía emails personalizados a tus contactos</p>
+        </div>
+        <div class="mt-4 sm:mt-0 flex space-x-3">
+          <button 
+            @click="saveDraft"
+            :disabled="saving"
+            class="inline-flex items-center px-4 py-2 bg-gray-600 text-white text-sm font-medium rounded-lg hover:bg-gray-700 transition-colors disabled:opacity-50"
+          >
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3-3m0 0l-3 3m3-3v12"/>
+            </svg>
+            {{ saving ? 'Guardando...' : 'Guardar Borrador' }}
+          </button>
+          <button 
+            @click="sendEmail"
+            :disabled="!canSend || sending"
+            class="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+          >
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+            </svg>
+            {{ sending ? 'Enviando...' : 'Enviar Email' }}
+          </button>
         </div>
       </div>
-    </div>
 
-    <!-- Contenido principal -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-      <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        
-        <!-- Panel principal del editor -->
-        <div class="lg:col-span-3 space-y-6">
-          
-          <!-- Tarjeta de destinatarios y asunto -->
-          <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-            <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
-              <h2 class="text-lg font-semibold text-gray-900">Detalles del Email</h2>
-            </div>
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Main Compose Area -->
+        <div class="lg:col-span-2 space-y-6">
+          <!-- Recipients Section -->
+          <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Destinatarios</h3>
             
-            <div class="p-6 space-y-6">
-              <!-- Destinatarios mejorados -->
+            <div class="space-y-4">
               <div>
-                <div class="flex items-center justify-between mb-3">
-                  <label class="block text-sm font-medium text-gray-700">
-                    Para <span class="text-red-500">*</span>
-                  </label>
-                  <button
-                    @click="toggleContactSelector"
-                    class="text-sm text-blue-600 hover:text-blue-700 font-medium"
+                <label class="block text-sm font-medium text-gray-700 mb-2">Para:</label>
+                <div class="flex flex-wrap gap-2 mb-2">
+                  <span 
+                    v-for="recipient in recipients" 
+                    :key="recipient"
+                    class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800"
                   >
-                    📋 Seleccionar Contactos
+                    {{ recipient }}
+                    <button 
+                      @click="removeRecipient(recipient)" 
+                      class="ml-2 text-blue-600 hover:text-blue-800"
+                    >
+                      <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                      </svg>
+                    </button>
+                  </span>
+                </div>
+                <div class="flex space-x-2">
+                  <input 
+                    v-model="newRecipient"
+                    type="email"
+                    placeholder="Agregar email..."
+                    class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    @keypress.enter="addRecipient"
+                  />
+                  <button 
+                    @click="addRecipient"
+                    class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700"
+                  >
+                    Agregar
+                  </button>
+                  <button 
+                    @click="showContactSelector = true"
+                    class="px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-md hover:bg-green-700"
+                  >
+                    Seleccionar Contactos
                   </button>
                 </div>
-                
-                <div class="recipients-container">
-                  <div class="flex flex-wrap gap-2 p-3 border border-gray-300 rounded-lg min-h-[48px] focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500 bg-white">
-                    <!-- Tags de destinatarios -->
-                    <TransitionGroup name="recipient" tag="div" class="flex flex-wrap gap-2">
-                      <div
-                        v-for="(recipient, index) in recipients"
-                        :key="recipient"
-                        class="inline-flex items-center px-3 py-1 rounded-full text-sm bg-blue-100 text-blue-800 border border-blue-200"
-                      >
-                        <span class="truncate max-w-[200px]">{{ recipient }}</span>
-                        <button
-                          @click="removeRecipient(index)"
-                          class="ml-2 text-blue-600 hover:text-blue-800 focus:outline-none"
-                        >
-                          <XMarkIcon class="h-4 w-4" />
-                        </button>
-                      </div>
-                    </TransitionGroup>
-                    
-                    <!-- Input para nuevos destinatarios -->
-                    <input
-                      v-model="newRecipient"
-                      @keydown.enter.prevent="addRecipient"
-                      @keydown.comma.prevent="addRecipient"
-                      @input="handleRecipientInput"
-                      @paste="handlePaste"
-                      type="email"
-                      placeholder="Agregar email..."
-                      class="flex-1 min-w-[200px] border-none outline-none focus:ring-0 bg-transparent"
-                    />
-                  </div>
-                  
-                  <div class="mt-2 flex items-center justify-between">
-                    <p class="text-sm text-gray-500">
-                      Separa múltiples emails con comas. Total: {{ recipients.length }}
-                    </p>
-                    <div v-if="recipients.length > 0" class="text-sm text-gray-400">
-                      {{ recipients.length }} destinatario{{ recipients.length !== 1 ? 's' : '' }}
-                    </div>
-                  </div>
+              </div>
+              
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">CC:</label>
+                  <input 
+                    v-model="emailData.cc"
+                    type="email"
+                    placeholder="Emails separados por comas"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">BCC:</label>
+                  <input 
+                    v-model="emailData.bcc"
+                    type="email"
+                    placeholder="Emails separados por comas"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
                 </div>
               </div>
+            </div>
+          </div>
 
-              <!-- Asunto mejorado -->
+          <!-- Email Content -->
+          <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Contenido del Email</h3>
+            
+            <div class="space-y-4">
               <div>
-                <label for="subject" class="block text-sm font-medium text-gray-700 mb-2">
-                  Asunto <span class="text-red-500">*</span>
-                </label>
-                <input
-                  id="subject"
+                <label class="block text-sm font-medium text-gray-700 mb-1">Asunto:</label>
+                <input 
                   v-model="emailData.subject"
                   type="text"
-                  class="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                  placeholder="Escribe un asunto atractivo..."
+                  required
+                  placeholder="Escribe el asunto del email"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
-                <div class="mt-1 flex justify-between text-sm text-gray-500">
-                  <span>Un buen asunto aumenta la tasa de apertura</span>
-                  <span>{{ emailData.subject.length }}/100</span>
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Mensaje:</label>
+                <div class="border border-gray-300 rounded-md">
+                  <div class="bg-gray-50 px-3 py-2 border-b border-gray-300 flex items-center space-x-2">
+                    <button 
+                      @click="toggleFormat('bold')"
+                      class="p-1 rounded hover:bg-gray-200"
+                      type="button"
+                    >
+                      <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M3 5a1 1 0 011-1h5.5a2.5 2.5 0 010 5H4v2h5.5a2.5 2.5 0 010 5H4a1 1 0 01-1-1V5z"/>
+                      </svg>
+                    </button>
+                    <button 
+                      @click="toggleFormat('italic')"
+                      class="p-1 rounded hover:bg-gray-200"
+                      type="button"
+                    >
+                      <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M8.25 3.75H12a.75.75 0 010 1.5h-1.136l-2.727 10.5H9.75a.75.75 0 010 1.5H6a.75.75 0 010-1.5h1.136L9.863 5.25H8.25a.75.75 0 010-1.5z"/>
+                      </svg>
+                    </button>
+                    <button 
+                      @click="toggleFormat('underline')"
+                      class="p-1 rounded hover:bg-gray-200"
+                      type="button"
+                    >
+                      <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M3 19a1 1 0 100-2h14a1 1 0 100 2H3zM6.5 4.5a1 1 0 00-2 0v5a4.5 4.5 0 009 0v-5a1 1 0 00-2 0v5a2.5 2.5 0 01-5 0v-5z"/>
+                      </svg>
+                    </button>
+                    <div class="border-l border-gray-300 h-4 mx-2"></div>
+                    <button 
+                      @click="insertVariable('firstName')"
+                      class="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded hover:bg-blue-200"
+                      type="button"
+                    >
+                      {{firstName}}
+                    </button>
+                    <button 
+                      @click="insertVariable('lastName')"
+                      class="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded hover:bg-blue-200"
+                      type="button"
+                    >
+                      {{lastName}}
+                    </button>
+                    <button 
+                      @click="insertVariable('email')"
+                      class="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded hover:bg-blue-200"
+                      type="button"
+                    >
+                      {{email}}
+                    </button>
+                  </div>
+                  <textarea 
+                    v-model="emailData.content"
+                    ref="contentEditor"
+                    rows="12"
+                    required
+                    placeholder="Escribe tu mensaje aquí..."
+                    class="w-full px-3 py-2 resize-y focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 border-0"
+                  ></textarea>
                 </div>
+                <p class="text-xs text-gray-500 mt-1">
+                  Puedes usar variables como {{firstName}}, {{lastName}}, {{email}} para personalizar el mensaje
+                </p>
               </div>
             </div>
           </div>
 
-          <!-- Editor de contenido -->
-          <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-            <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
-              <div class="flex items-center justify-between">
-                <h2 class="text-lg font-semibold text-gray-900">Contenido del Email</h2>
-                <div class="flex items-center space-x-2">
-                  <span class="text-sm text-gray-500">Modo:</span>
-                  <button
-                    @click="toggleHtmlMode"
-                    :class="isHtmlMode ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-700'"
-                    class="px-3 py-1 rounded-full text-sm font-medium transition-colors"
+          <!-- Attachments -->
+          <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Archivos Adjuntos</h3>
+            
+            <div class="space-y-4">
+              <div class="flex items-center justify-center w-full">
+                <label class="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100">
+                  <div class="flex flex-col items-center justify-center pt-5 pb-6">
+                    <svg class="w-8 h-8 mb-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                    </svg>
+                    <p class="mb-2 text-sm text-gray-500">
+                      <span class="font-semibold">Click para subir</span> o arrastra archivos aquí
+                    </p>
+                    <p class="text-xs text-gray-500">PNG, JPG, PDF, DOC (MAX. 10MB)</p>
+                  </div>
+                  <input 
+                    type="file" 
+                    class="hidden" 
+                    multiple 
+                    accept=".png,.jpg,.jpeg,.pdf,.doc,.docx,.txt"
+                    @change="handleFileUpload"
+                  />
+                </label>
+              </div>
+              
+              <div v-if="attachments.length > 0" class="space-y-2">
+                <div 
+                  v-for="(file, index) in attachments" 
+                  :key="index"
+                  class="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                >
+                  <div class="flex items-center">
+                    <svg class="w-5 h-5 text-gray-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                      <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                    </svg>
+                    <span class="text-sm text-gray-700">{{ file.name }} ({{ formatFileSize(file.size) }})</span>
+                  </div>
+                  <button 
+                    @click="removeAttachment(index)"
+                    class="text-red-600 hover:text-red-800"
                   >
-                    {{ isHtmlMode ? 'HTML' : 'Visual' }}
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                      <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                    </svg>
                   </button>
                 </div>
               </div>
             </div>
-            
-            <div class="p-0">
-              <!-- Editor profesional -->
-              <EmailEditorPro
-                v-model="emailData.content"
-                :subject="emailData.subject"
-                :from-email="user?.email || 'info@be-mindpower.net'"
-              />
-            </div>
           </div>
         </div>
 
-        <!-- Panel lateral -->
-        <div class="lg:col-span-1 space-y-6">
+        <!-- Sidebar -->
+        <div class="space-y-6">
+          <!-- Email Preview -->
+          <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Vista Previa</h3>
+            <div class="space-y-3 text-sm">
+              <div>
+                <span class="font-medium text-gray-600">Para:</span>
+                <span class="text-gray-900">{{ recipients.length }} destinatario(s)</span>
+              </div>
+              <div>
+                <span class="font-medium text-gray-600">Asunto:</span>
+                <span class="text-gray-900">{{ emailData.subject || 'Sin asunto' }}</span>
+              </div>
+              <div>
+                <span class="font-medium text-gray-600">Archivos:</span>
+                <span class="text-gray-900">{{ attachments.length }} archivo(s)</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Templates -->
+          <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Plantillas</h3>
+            <div class="space-y-2">
+              <button 
+                v-for="template in templates" 
+                :key="template.id"
+                @click="loadTemplate(template)"
+                class="w-full text-left p-3 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors"
+              >
+                <div class="font-medium text-gray-900">{{ template.name }}</div>
+                <div class="text-sm text-gray-600 truncate">{{ template.subject }}</div>
+              </button>
+              <NuxtLink 
+                to="/templates"
+                class="block w-full text-center p-3 text-blue-600 hover:text-blue-800 text-sm font-medium"
+              >
+                Ver todas las plantillas →
+              </NuxtLink>
+            </div>
+          </div>
+
+          <!-- Quick Stats -->
+          <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Estadísticas</h3>
+            <div class="space-y-3">
+              <div class="flex justify-between text-sm">
+                <span class="text-gray-600">Emails enviados hoy:</span>
+                <span class="font-medium text-gray-900">{{ stats.todayEmails }}</span>
+              </div>
+              <div class="flex justify-between text-sm">
+                <span class="text-gray-600">Total contactos:</span>
+                <span class="font-medium text-gray-900">{{ stats.totalContacts }}</span>
+              </div>
+              <div class="flex justify-between text-sm">
+                <span class="text-gray-600">Tasa de apertura:</span>
+                <span class="font-medium text-gray-900">{{ stats.openRate }}%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Contact Selector Modal -->
+    <div v-if="showContactSelector" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+      <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-2/3 shadow-lg rounded-md bg-white">
+        <div class="mt-3">
+          <h3 class="text-lg font-medium text-gray-900 mb-4">Seleccionar Contactos</h3>
           
-          <!-- Adjuntos -->
-          <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-            <div class="px-4 py-3 bg-gray-50 border-b border-gray-200">
-              <h3 class="text-sm font-semibold text-gray-900 flex items-center">
-                <PaperClipIcon class="h-4 w-4 mr-2" />
-                Adjuntos
-              </h3>
-            </div>
-            
-            <div class="p-4">
-              <!-- Zona de drop mejorada -->
-              <div
-                @drop="handleDrop"
-                @dragover.prevent
-                @dragenter.prevent="isDragging = true"
-                @dragleave.prevent="isDragging = false"
-                :class="{
-                  'border-blue-500 bg-blue-50': isDragging,
-                  'border-gray-300': !isDragging
-                }"
-                class="border-2 border-dashed rounded-lg p-4 text-center cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition-all duration-200"
-                @click="$refs.fileInput?.click()"
+          <div class="max-h-96 overflow-y-auto">
+            <div class="space-y-2">
+              <div 
+                v-for="contact in contacts" 
+                :key="contact.idPerson"
+                class="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50"
               >
-                <CloudArrowUpIcon class="mx-auto h-8 w-8 text-gray-400 mb-2" />
-                <p class="text-sm text-gray-600 font-medium">
-                  Arrastra archivos aquí
-                </p>
-                <p class="text-xs text-gray-500 mt-1">
-                  o haz clic para seleccionar
-                </p>
-                <p class="text-xs text-gray-400 mt-2">
-                  Máximo 10MB por archivo
-                </p>
-              </div>
-              
-              <input
-                ref="fileInput"
-                type="file"
-                multiple
-                @change="handleFileSelect"
-                class="hidden"
-                accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png,.gif,.zip,.rar"
-              />
-
-              <!-- Lista de adjuntos mejorada -->
-              <div v-if="attachments.length > 0" class="mt-4 space-y-2">
-                <TransitionGroup name="attachment" tag="div" class="space-y-2">
-                  <div
-                    v-for="(attachment, index) in attachments"
-                    :key="attachment.name + index"
-                    class="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200"
-                  >
-                    <div class="flex items-center space-x-3 flex-1 min-w-0">
-                      <div class="flex-shrink-0">
-                        <DocumentIcon class="h-5 w-5 text-gray-500" />
-                      </div>
-                      <div class="flex-1 min-w-0">
-                        <p class="text-sm font-medium text-gray-900 truncate">
-                          {{ attachment.name }}
-                        </p>
-                        <p class="text-xs text-gray-500">
-                          {{ formatFileSize(attachment.size) }}
-                        </p>
-                      </div>
-                    </div>
-                    <button
-                      @click="removeAttachment(index)"
-                      class="flex-shrink-0 p-1 text-gray-400 hover:text-red-500 transition-colors"
-                    >
-                      <XMarkIcon class="h-4 w-4" />
-                    </button>
-                  </div>
-                </TransitionGroup>
-                
-                <div class="pt-2 border-t border-gray-200">
-                  <p class="text-xs text-gray-500 text-center">
-                    {{ attachments.length }} archivo{{ attachments.length !== 1 ? 's' : '' }} 
-                    ({{ formatTotalSize() }})
-                  </p>
-                </div>
+                <input 
+                  type="checkbox"
+                  :id="`contact-${contact.idPerson}`"
+                  :value="contact.email"
+                  v-model="selectedContacts"
+                  class="mr-3 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                />
+                <label :for="`contact-${contact.idPerson}`" class="flex-1 cursor-pointer">
+                  <div class="font-medium text-gray-900">{{ contact.firstName }} {{ contact.lastName }}</div>
+                  <div class="text-sm text-gray-600">{{ contact.email }}</div>
+                </label>
               </div>
             </div>
           </div>
-
-          <!-- Estadísticas rápidas -->
-          <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-            <div class="px-4 py-3 bg-gray-50 border-b border-gray-200">
-              <h3 class="text-sm font-semibold text-gray-900">Resumen</h3>
-            </div>
-            <div class="p-4 space-y-3">
-              <div class="flex justify-between text-sm">
-                <span class="text-gray-600">Destinatarios:</span>
-                <span class="font-medium">{{ recipients.length }}</span>
-              </div>
-              <div class="flex justify-between text-sm">
-                <span class="text-gray-600">Adjuntos:</span>
-                <span class="font-medium">{{ attachments.length }}</span>
-              </div>
-              <div class="flex justify-between text-sm">
-                <span class="text-gray-600">Caracteres:</span>
-                <span class="font-medium">{{ contentLength }}</span>
-              </div>
-              <div class="pt-2 border-t border-gray-200">
-                <div class="flex items-center text-sm">
-                  <div class="flex-1">
-                    <div class="flex justify-between mb-1">
-                      <span class="text-gray-600">Completado:</span>
-                      <span class="font-medium">{{ completionPercentage }}%</span>
-                    </div>
-                    <div class="w-full bg-gray-200 rounded-full h-2">
-                      <div 
-                        class="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                        :style="{ width: completionPercentage + '%' }"
-                      ></div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Acciones rápidas -->
-          <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-            <div class="px-4 py-3 bg-gray-50 border-b border-gray-200">
-              <h3 class="text-sm font-semibold text-gray-900">Acciones Rápidas</h3>
-            </div>
-            <div class="p-4 space-y-2">
-              <button
-                @click="saveDraft"
-                :disabled="saving"
-                class="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 transition-colors"
-              >
-                <DocumentIcon class="h-4 w-4 mr-2" />
-                {{ saving ? 'Guardando...' : 'Guardar Borrador' }}
-              </button>
-              
-              <button
-                @click="clearAll"
-                class="w-full flex items-center justify-center px-4 py-2 border border-red-300 rounded-lg text-sm font-medium text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors"
-              >
-                <TrashIcon class="h-4 w-4 mr-2" />
-                Limpiar Todo
-              </button>
-            </div>
+          
+          <div class="flex justify-end space-x-3 mt-6">
+            <button 
+              @click="showContactSelector = false"
+              class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md"
+            >
+              Cancelar
+            </button>
+            <button 
+              @click="addSelectedContacts"
+              class="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md"
+            >
+              Agregar Seleccionados ({{ selectedContacts.length }})
+            </button>
           </div>
         </div>
       </div>
     </div>
-
-    <!-- Modal de selector de contactos -->
-    <ContactSelectorModal
-      v-if="showContactSelector"
-      @close="showContactSelector = false"
-      @select="handleContactsSelected"
-    />
-
-    <!-- Toast de notificaciones -->
-    <div v-if="showToast" class="fixed bottom-4 right-4 z-50">
-      <div class="bg-white rounded-lg shadow-lg border border-gray-200 p-4 max-w-sm">
-        <div class="flex items-center">
-          <div class="flex-shrink-0">
-            <CheckIcon v-if="toastType === 'success'" class="h-5 w-5 text-green-500" />
-            <XMarkIcon v-else class="h-5 w-5 text-red-500" />
-          </div>
-          <div class="ml-3">
-            <p class="text-sm font-medium text-gray-900">{{ toastMessage }}</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
+  </NuxtLayout>
 </template>
 
-<script setup lang="ts">
-import { nextTick } from 'vue'
-import {
-  ArrowLeftIcon,
-  DocumentIcon,
-  PaperAirplaneIcon,
-  CloudArrowUpIcon,
-  XMarkIcon,
-  CheckIcon,
-  PaperClipIcon,
-  TrashIcon
-} from '@heroicons/vue/24/outline'
+<script setup>
+import { ref, computed, onMounted, nextTick } from 'vue'
 
-// Proteger la ruta
-definePageMeta({ middleware: 'admin' })
-
-// Composables
-const { user } = useSupabaseMaster()
-const { uploadFile } = useFileUpload()
-
-// Estado del formulario
-const emailData = reactive({
-  subject: '',
-  content: '',
-  isHtml: true
+// Define page meta with middleware
+definePageMeta({
+  middleware: 'auth'
 })
 
-// Estado de la UI
-const recipients = ref<string[]>([])
+// Reactive data
+const recipients = ref([])
 const newRecipient = ref('')
-const attachments = ref<File[]>([])
-const isDragging = ref(false)
+const attachments = ref([])
 const sending = ref(false)
 const saving = ref(false)
-const isHtmlMode = ref(true)
 const showContactSelector = ref(false)
-const showMobileMenu = ref(false)
-const showToast = ref(false)
-const toastMessage = ref('')
-const toastType = ref<'success' | 'error'>('success')
+const selectedContacts = ref([])
+const contacts = ref([])
+const templates = ref([])
+const contentEditor = ref(null)
 
-// Referencias
-const fileInput = ref<HTMLInputElement>()
+// Email data
+const emailData = ref({
+  subject: '',
+  content: '',
+  cc: '',
+  bcc: ''
+})
+
+// Stats
+const stats = ref({
+  todayEmails: 0,
+  totalContacts: 0,
+  openRate: 0
+})
 
 // Computed
 const canSend = computed(() => {
-  return recipients.value.length > 0 && 
-         emailData.subject.trim() && 
-         emailData.content.trim() && 
-         !sending.value
+  return recipients.value.length > 0 && emailData.value.subject && emailData.value.content
 })
 
-const contentLength = computed(() => {
-  const div = document.createElement('div')
-  div.innerHTML = emailData.content
-  return div.textContent?.length || 0
-})
-
-const completionPercentage = computed(() => {
-  let score = 0
-  if (recipients.value.length > 0) score += 30
-  if (emailData.subject.trim()) score += 30
-  if (emailData.content.trim()) score += 40
-  return Math.min(score, 100)
-})
-
-// Métodos para destinatarios (mejorados)
+// Methods
 const addRecipient = () => {
-  const input = newRecipient.value.trim()
-  if (!input) return
-  
-  const emails = input.split(',').map(email => email.trim()).filter(email => email)
-  
-  emails.forEach(email => {
-    if (isValidEmail(email) && !recipients.value.includes(email)) {
+  if (newRecipient.value && !recipients.value.includes(newRecipient.value)) {
+    recipients.value.push(newRecipient.value)
+    newRecipient.value = ''
+  }
+}
+
+const removeRecipient = (email) => {
+  recipients.value = recipients.value.filter(r => r !== email)
+}
+
+const addSelectedContacts = () => {
+  selectedContacts.value.forEach(email => {
+    if (!recipients.value.includes(email)) {
       recipients.value.push(email)
     }
   })
-  
-  newRecipient.value = ''
+  selectedContacts.value = []
+  showContactSelector.value = false
 }
 
-const removeRecipient = (index: number) => {
-  recipients.value.splice(index, 1)
-}
-
-const isValidEmail = (email: string) => {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-  return emailRegex.test(email)
-}
-
-const handleRecipientInput = (event: Event) => {
-  const target = event.target as HTMLInputElement
-  const value = target.value
-  
-  if (value.includes(',')) {
-    nextTick(() => {
-      addRecipient()
-    })
-  }
-}
-
-const handlePaste = (event: ClipboardEvent) => {
-  event.preventDefault()
-  const pastedText = event.clipboardData?.getData('text') || ''
-  
-  if (pastedText.trim()) {
-    newRecipient.value = (newRecipient.value + pastedText).trim()
-    
-    if (pastedText.includes(',') || pastedText.includes(' ') || pastedText.includes(';')) {
-      nextTick(() => {
-        newRecipient.value = newRecipient.value
-          .replace(/[;\s]+/g, ',')
-          .replace(/,+/g, ',')
-        addRecipient()
-      })
+const handleFileUpload = (event) => {
+  const files = Array.from(event.target.files)
+  files.forEach(file => {
+    if (file.size <= 10 * 1024 * 1024) { // 10MB limit
+      attachments.value.push(file)
+    } else {
+      alert(`El archivo ${file.name} es demasiado grande. Máximo 10MB.`)
     }
-  }
+  })
 }
 
-// Métodos de archivos
-const handleFileSelect = (event: Event) => {
-  const target = event.target as HTMLInputElement
-  if (target.files) {
-    Array.from(target.files).forEach(file => {
-      if (file.size <= 10 * 1024 * 1024) { // 10MB
-        attachments.value.push(file)
-      } else {
-        showToastMessage('Archivo demasiado grande: ' + file.name, 'error')
-      }
-    })
-  }
-}
-
-const handleDrop = (event: DragEvent) => {
-  event.preventDefault()
-  isDragging.value = false
-  
-  if (event.dataTransfer?.files) {
-    Array.from(event.dataTransfer.files).forEach(file => {
-      if (file.size <= 10 * 1024 * 1024) {
-        attachments.value.push(file)
-      } else {
-        showToastMessage('Archivo demasiado grande: ' + file.name, 'error')
-      }
-    })
-  }
-}
-
-const removeAttachment = (index: number) => {
+const removeAttachment = (index) => {
   attachments.value.splice(index, 1)
 }
 
-const formatFileSize = (bytes: number) => {
+const formatFileSize = (bytes) => {
   if (bytes === 0) return '0 Bytes'
   const k = 1024
   const sizes = ['Bytes', 'KB', 'MB', 'GB']
@@ -528,183 +440,150 @@ const formatFileSize = (bytes: number) => {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
 }
 
-const formatTotalSize = () => {
-  const total = attachments.value.reduce((sum, file) => sum + file.size, 0)
-  return formatFileSize(total)
+const toggleFormat = (format) => {
+  document.execCommand(format, false, null)
 }
 
-// Métodos principales
+const insertVariable = (variable) => {
+  if (contentEditor.value) {
+    const cursorPos = contentEditor.value.selectionStart
+    const textBefore = emailData.value.content.substring(0, cursorPos)
+    const textAfter = emailData.value.content.substring(cursorPos)
+    emailData.value.content = textBefore + `{{${variable}}}` + textAfter
+    
+    // Set cursor position after the inserted variable
+    nextTick(() => {
+      contentEditor.value.setSelectionRange(cursorPos + variable.length + 4, cursorPos + variable.length + 4)
+      contentEditor.value.focus()
+    })
+  }
+}
+
+const loadTemplate = (template) => {
+  emailData.value.subject = template.subject
+  emailData.value.content = template.html_content || template.text_content || ''
+}
+
 const sendEmail = async () => {
   if (!canSend.value) return
-  
-  sending.value = true
+
   try {
-    let response
-    
-    if (attachments.value.length > 0) {
-      const formData = new FormData()
-      formData.append('recipients', JSON.stringify(recipients.value))
-      formData.append('subject', emailData.subject)
-      formData.append('content', emailData.content)
-      formData.append('isHtml', String(emailData.isHtml))
-      formData.append('sender', user.value?.email || 'info@be-mindpower.net')
-      
-      attachments.value.forEach((file, index) => {
-        formData.append(`attachment_${index}`, file)
-      })
+    sending.value = true
 
-      response = await $fetch('/api/emails/send-with-files', {
-        method: 'POST',
-        body: formData
-      })
-    } else {
-      const emailPayload = {
-        recipients: recipients.value,
-        subject: emailData.subject,
-        content: emailData.content,
-        isHtml: emailData.isHtml,
-        attachments: [],
-        sender: user.value?.email || 'info@be-mindpower.net'
-      }
+    // Prepare form data for file uploads
+    const formData = new FormData()
+    formData.append('recipients', JSON.stringify(recipients.value))
+    formData.append('subject', emailData.value.subject)
+    formData.append('content', emailData.value.content)
+    formData.append('cc', emailData.value.cc)
+    formData.append('bcc', emailData.value.bcc)
 
-      response = await $fetch('/api/emails/send', {
-        method: 'POST',
-        body: emailPayload
-      })
-    }
+    // Add attachments
+    attachments.value.forEach((file, index) => {
+      formData.append(`attachment_${index}`, file)
+    })
+
+    const response = await $fetch('/api/emails/send', {
+      method: 'POST',
+      body: formData
+    })
 
     if (response.success) {
-      showToastMessage(`Email enviado exitosamente a ${response.sent} destinatarios`, 'success')
-      clearAll()
+      alert('¡Email enviado exitosamente!')
+      // Reset form
+      recipients.value = []
+      emailData.value = { subject: '', content: '', cc: '', bcc: '' }
+      attachments.value = []
     } else {
       throw new Error(response.message || 'Error al enviar email')
     }
-  } catch (error: any) {
-    console.error('Error enviando email:', error)
-    showToastMessage('Error al enviar email: ' + error.message, 'error')
+
+  } catch (error) {
+    console.error('Error sending email:', error)
+    alert('Error al enviar el email: ' + error.message)
   } finally {
     sending.value = false
   }
 }
 
 const saveDraft = async () => {
-  saving.value = true
   try {
-    // Implementar guardado de borrador
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    showToastMessage('Borrador guardado', 'success')
+    saving.value = true
+    // Implementation for saving draft
+    await new Promise(resolve => setTimeout(resolve, 1000)) // Simulate API call
+    alert('Borrador guardado exitosamente')
   } catch (error) {
-    showToastMessage('Error al guardar borrador', 'error')
+    console.error('Error saving draft:', error)
+    alert('Error al guardar borrador')
   } finally {
     saving.value = false
   }
 }
 
-const clearAll = () => {
-  if (confirm('¿Estás seguro de que quieres limpiar todo el contenido?')) {
-    recipients.value = []
-    newRecipient.value = ''
-    emailData.subject = ''
-    emailData.content = ''
-    attachments.value = []
-  }
-}
-
-const toggleHtmlMode = () => {
-  isHtmlMode.value = !isHtmlMode.value
-}
-
-const toggleContactSelector = () => {
-  showContactSelector.value = !showContactSelector.value
-}
-
-const handleContactsSelected = (selectedContacts: any[]) => {
-  selectedContacts.forEach(contact => {
-    if (contact.email && !recipients.value.includes(contact.email)) {
-      recipients.value.push(contact.email)
-    }
-  })
-  showContactSelector.value = false
-}
-
-const showToastMessage = (message: string, type: 'success' | 'error' = 'success') => {
-  toastMessage.value = message
-  toastType.value = type
-  showToast.value = true
-  setTimeout(() => {
-    showToast.value = false
-  }, 3000)
-}
-
-// Inicialización
-onMounted(() => {
-  // Leer parámetros URL para prellenar destinatarios
-  const route = useRoute()
-  if (route.query.to) {
-    const emailParam = route.query.to as string
-    const emails = emailParam.split(',').map(email => email.trim()).filter(email => email)
+const loadContacts = async () => {
+  try {
+    const { useSupabase } = await import('~/composables/useSupabase')
+    const supabase = useSupabase()
     
-    emails.forEach(email => {
-      if (!recipients.value.includes(email)) {
-        recipients.value.push(email)
-      }
-    })
+    const { data, error } = await supabase
+      .from('USERS')
+      .select('idPerson, firstName, lastName, email')
+      .limit(100)
+    
+    if (error) {
+      console.error('Error loading contacts:', error)
+      return
+    }
+    
+    contacts.value = data || []
+  } catch (error) {
+    console.error('Error:', error)
   }
+}
 
-  if (route.query.subject) {
-    emailData.subject = route.query.subject as string
+const loadTemplates = async () => {
+  try {
+    const { useSupabase } = await import('~/composables/useSupabase')
+    const supabase = useSupabase()
+    
+    const { data, error } = await supabase
+      .from('email_templates')
+      .select('id, name, subject, html_content, text_content')
+      .eq('is_active', true)
+      .limit(5)
+    
+    if (error) {
+      console.error('Error loading templates:', error)
+      return
+    }
+    
+    templates.value = data || []
+  } catch (error) {
+    console.error('Error:', error)
   }
+}
 
-  if (route.query.body || route.query.content) {
-    const content = (route.query.body || route.query.content) as string
-    emailData.content = content
+const loadStats = async () => {
+  try {
+    // Mock stats for now
+    stats.value = {
+      todayEmails: 12,
+      totalContacts: contacts.value.length,
+      openRate: 68.5
+    }
+  } catch (error) {
+    console.error('Error loading stats:', error)
   }
+}
+
+onMounted(() => {
+  loadContacts()
+  loadTemplates()
+  loadStats()
+})
+
+// Set page title
+useHead({
+  title: 'Componer Email - MailPower'
 })
 </script>
-
-<style scoped>
-/* Transiciones */
-.recipient-enter-active,
-.recipient-leave-active {
-  transition: all 0.3s ease;
-}
-
-.recipient-enter-from {
-  opacity: 0;
-  transform: scale(0.8);
-}
-
-.recipient-leave-to {
-  opacity: 0;
-  transform: scale(0.8);
-}
-
-.attachment-enter-active,
-.attachment-leave-active {
-  transition: all 0.3s ease;
-}
-
-.attachment-enter-from {
-  opacity: 0;
-  transform: translateX(-20px);
-}
-
-.attachment-leave-to {
-  opacity: 0;
-  transform: translateX(20px);
-}
-
-/* Responsive mejoras */
-@media (max-width: 640px) {
-  .recipients-container .truncate {
-    max-width: 120px;
-  }
-}
-
-/* Mejoras visuales */
-.bg-gradient-to-br {
-  background-image: linear-gradient(to bottom right, var(--tw-gradient-stops));
-}
-</style>
-
-

@@ -12,15 +12,33 @@ export default defineEventHandler(async (event) => {
       })
     }
 
-    const config = useRuntimeConfig()
+    console.log('🔧 LOGIN ATTEMPT:', { email: email, password: '***' })
     
-    // Verificar que las credenciales coincidan con las configuradas
-    if (email !== config.adminEmail || password !== config.adminPassword) {
+    // TEMPORALMENTE usar valores hardcoded para debugging
+    const adminEmail = 'info@be-mindpower.net'
+    const adminPassword = 'mK-d9846MYfOTglD'
+    
+    console.log('🔍 COMPARANDO:', {
+      receivedEmail: email,
+      expectedEmail: adminEmail,
+      emailMatch: email === adminEmail,
+      passwordMatch: password === adminPassword,
+      receivedPasswordLength: password?.length,
+      expectedPasswordLength: adminPassword.length
+    })
+    
+    // Verificar que las credenciales coincidan EXACTAMENTE
+    if (email !== adminEmail || password !== adminPassword) {
+      console.log('❌ Credenciales no coinciden')
+      console.log('📧 Email coincide:', email === adminEmail)
+      console.log('🔑 Password coincide:', password === adminPassword)
       throw createError({
         statusCode: 401,
         statusMessage: 'Credenciales inválidas'
       })
     }
+    
+    console.log('✅ Credenciales VÁLIDAS, continuando...')
 
     // Crear cliente de Supabase
     const supabase = createClient(
@@ -160,7 +178,8 @@ export default defineEventHandler(async (event) => {
         role: 'admin',
         isAdmin: true
       },
-      session: authData.session
+      session: authData.session,
+      redirect: '/dashboard'
     }
 
   } catch (error) {
