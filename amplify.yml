@@ -5,12 +5,22 @@ frontend:
       commands:
         # Enable corepack for modern package managers
         - corepack enable
-        # Install dependencies using nypm (universal package manager)
-        - npx --yes nypm i
+        # Clear problematic dependencies to avoid native binding issues
+        - rm -rf node_modules package-lock.json
+        # Install dependencies without optional dependencies that cause native binding issues
+        - npm install --no-optional --no-audit --no-fund --legacy-peer-deps
+        # Remove oxc-parser entirely if it was installed
+        - npm uninstall oxc-parser --no-save || echo "oxc-parser not found, continuing..."
+        # Verify the problematic module is not present
+        - rm -rf node_modules/oxc-parser || echo "oxc-parser directory not found"
+        - rm -rf node_modules/@oxc-parser || echo "@oxc-parser directory not found"
     build:
       commands:
-        # Build the Nuxt 3 application
-        - npm run build
+        # Set environment variables to skip problematic features
+        - export SKIP_OXC_PARSER=1
+        - export NO_OXC_PARSER=1
+        # Build the Nuxt 3 application with error handling
+        - npm run build || (echo "Build failed, trying without prepare step" && npm run build --skip-prepare)
   artifacts:
     # IMPORTANT - Nuxt 3 builds to .output/public directory
     baseDirectory: .output/public
@@ -18,7 +28,9 @@ frontend:
       - '**/*'
   cache:
     paths:
-      # Cache node_modules for faster builds
+      # Cache node_modules for faster builds (but not problematic ones)
       - node_modules/**/*
+      - '!node_modules/oxc-parser/**/*'
+      - '!node_modules/@oxc-parser/**/*'
       # Cache .nuxt build cache
       - .nuxt/**/*
