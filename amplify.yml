@@ -1,0 +1,53 @@
+version: 1
+frontend:
+  phases:
+    preBuild:
+      commands:
+        # Set Node.js version for compatibility (20 or higher required)
+        - nvm use 20
+        # Enable corepack for modern package managers
+        - corepack enable
+        # Clear npm cache to avoid native binding issues
+        - npm cache clean --force
+        # Remove problematic lock files and node_modules to ensure clean install
+        - rm -rf node_modules package-lock.json
+        # Install dependencies with our .npmrc configuration
+        - npm install --no-audit --no-fund --legacy-peer-deps
+        # Verify installation worked
+        - npm list --depth=0 || echo "Some dependencies may have warnings, continuing..."
+    build:
+      commands:
+        # Set production environment
+        - echo "Building for production environment"
+        # Build the Nuxt 3 application
+        - npm run build
+        # Verify build output exists
+        - ls -la .output/ || echo "Build output directory missing"
+        # Show build stats
+        - du -sh .output/* || echo "No build output to measure"
+  artifacts:
+    # Nuxt 3 builds to .output directory
+    baseDirectory: .output/public
+    files:
+      - '**/*'
+  cache:
+    paths:
+      # Cache node_modules for faster builds
+      - node_modules/**/*
+      # Cache .nuxt build cache
+      - .nuxt/**/*
+      # Cache npm cache
+      - ~/.npm/**/*
+
+# Environment variables for the build process
+environment:
+  variables:
+    # Node.js settings for better compatibility
+    NODE_OPTIONS: "--max-old-space-size=4096"
+    # npm settings to avoid native binding issues
+    npm_config_target_platform: "linux"
+    npm_config_target_arch: "x64"
+    npm_config_cache: "/tmp/.npm"
+    # Disable problematic features during build
+    DISABLE_OPENCOLLECTIVE: "true"
+    ADBLOCK: "true"
