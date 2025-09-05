@@ -1,4 +1,6 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
+import { defineNuxtConfig } from 'nuxt/config'
+
 export default defineNuxtConfig({
   devtools: { enabled: true },
   compatibilityDate: '2024-04-03',
@@ -65,29 +67,26 @@ export default defineNuxtConfig({
     }
   },
 
-  // Build configuration to avoid native binding issues
+  // Build configuration optimized for performance
   nitro: {
-    experimental: {
-      wasm: true
-    },
     esbuild: {
       options: {
         target: 'es2020'
       }
+    },
+    // External dependencies for server build
+    experimental: {
+      wasm: false
     }
   },
 
   // Vite configuration for build compatibility
   vite: {
+    define: {
+      global: 'globalThis',
+    },
     optimizeDeps: {
-      exclude: ['oxc-parser', '@oxc-parser/binding-linux-x64-gnu']
-    }
-  },
-
-  // Build hooks to handle native dependencies
-  hooks: {
-    'build:before': () => {
-      console.log('Starting build with native dependency handling...')
+      include: ['papaparse']
     }
   }
 })

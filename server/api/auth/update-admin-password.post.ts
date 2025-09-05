@@ -15,7 +15,7 @@ export default defineEventHandler(async (event) => {
     console.log('Actualizando contraseña para:', adminEmail)
 
     // Primero intentar hacer login con la contraseña anterior
-    const { data: loginData, error: loginError } = await supabase.auth.signInWithPassword({
+    let { data: loginData, error: loginError } = await supabase.auth.signInWithPassword({
       email: adminEmail,
       password: oldPassword
     })
@@ -33,7 +33,7 @@ export default defineEventHandler(async (event) => {
       ]
 
       let loginSuccess = false
-      let currentSession = null
+      let currentSession: typeof loginData | null = null
 
       for (const testPassword of possiblePasswords) {
         try {
@@ -61,7 +61,7 @@ export default defineEventHandler(async (event) => {
         }
       }
 
-      loginData = currentSession
+      loginData = currentSession!
     }
 
     console.log('Login exitoso, actualizando contraseña...')

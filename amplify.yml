@@ -5,32 +5,26 @@ frontend:
       commands:
         # Enable corepack for modern package managers
         - corepack enable
-        # Clear problematic dependencies to avoid native binding issues
+        # Clean install to ensure native bindings are correct for Linux (Amplify environment)
         - rm -rf node_modules package-lock.json
-        # Install dependencies without optional dependencies that cause native binding issues
-        - npm install --no-optional --no-audit --no-fund --legacy-peer-deps
-        # Remove oxc-parser entirely if it was installed
-        - npm uninstall oxc-parser --no-save || echo "oxc-parser not found, continuing..."
-        # Verify the problematic module is not present
-        - rm -rf node_modules/oxc-parser || echo "oxc-parser directory not found"
-        - rm -rf node_modules/@oxc-parser || echo "@oxc-parser directory not found"
+        # Install with proper dependencies for Amplify's Linux environment
+        - npm install --no-audit --no-fund
+        # Install the correct native bindings for Linux x64 (Amplify's environment)
+        - npm install @oxc-parser/binding-linux-x64-gnu @oxc-transform/binding-linux-x64-gnu @rollup/rollup-linux-x64-gnu @esbuild/linux-x64 @oxc-minify/binding-linux-x64-gnu oxc-transform --save-dev --no-optional
     build:
       commands:
-        # Set environment variables to skip problematic features
-        - export SKIP_OXC_PARSER=1
-        - export NO_OXC_PARSER=1
-        # Build the Nuxt 3 application with error handling
-        - npm run build || (echo "Build failed, trying without prepare step" && npm run build --skip-prepare)
+        # Set Node.js environment for production build
+        - export NODE_ENV=production
+        # Build the Nuxt 3 application
+        - npm run build
   artifacts:
-    # IMPORTANT - Nuxt 3 builds to .output/public directory
-    baseDirectory: .output/public
+    # Nuxt 3 builds to .output directory
+    baseDirectory: .output
     files:
       - '**/*'
   cache:
     paths:
-      # Cache node_modules for faster builds (but not problematic ones)
+      # Cache node_modules for faster builds
       - node_modules/**/*
-      - '!node_modules/oxc-parser/**/*'
-      - '!node_modules/@oxc-parser/**/*'
       # Cache .nuxt build cache
       - .nuxt/**/*
