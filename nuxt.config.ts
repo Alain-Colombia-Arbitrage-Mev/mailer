@@ -46,6 +46,28 @@ export default defineNuxtConfig({
   
   ssr: true,
   
+  // Configuración específica para Amplify
+  nitro: process.env.NODE_ENV === 'production' ? {
+    preset: 'aws-amplify',
+    rollupConfig: {
+      external: ['papaparse']
+    }
+  } : {
+    esbuild: {
+      options: {
+        target: 'es2020'
+      }
+    },
+    // External dependencies for server build
+    experimental: {
+      wasm: false
+    },
+    // Handle problematic packages - exclude papaparse from bundling
+    externals: {
+      external: ['papaparse']
+    }
+  },
+  
   // Puerto configurado en 3001 según BASE_URL
   devServer: {
     port: 3001
@@ -67,18 +89,6 @@ export default defineNuxtConfig({
     }
   },
 
-  // Build configuration optimized for performance
-  nitro: {
-    esbuild: {
-      options: {
-        target: 'es2020'
-      }
-    },
-    // External dependencies for server build
-    experimental: {
-      wasm: false
-    }
-  },
 
   // Vite configuration for build compatibility
   vite: {
@@ -87,6 +97,9 @@ export default defineNuxtConfig({
     },
     optimizeDeps: {
       include: ['papaparse']
+    },
+    ssr: {
+      noExternal: ['papaparse']
     }
   }
 })

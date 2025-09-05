@@ -1,0 +1,1 @@
+import{a1 as t,n as r}from"#entry";const s=t((a,l)=>{const o=localStorage.getItem("mailpower_user");if(!o)return r("/login");try{const e=JSON.parse(o);if(!e.email||!e.id)return localStorage.removeItem("mailpower_user"),r("/login")}catch{return localStorage.removeItem("mailpower_user"),r("/login")}});export{s as default};
