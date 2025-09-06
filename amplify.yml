@@ -3,8 +3,8 @@ frontend:
   phases:
     preBuild:
       commands:
-        # Set Node.js version to 18 (compatible with Amplify)
-        - nvm use 18
+        # Set Node.js version to 20 (latest LTS)
+        - nvm use 20
         # Clean previous builds (keep package-lock.json for npm ci)
         - rm -rf node_modules || true
         - npm cache clean --force || true

@@ -4,8 +4,8 @@
   "description": "Sistema empresarial completo de email marketing con tracking avanzado",
   "private": true,
   "engines": {
-    "node": ">=18.0.0",
-    "npm": ">=9.0.0"
+    "node": ">=20.0.0",
+    "npm": ">=10.0.0"
   },
   "scripts": {
     "build": "nuxt build",
@@ -44,6 +44,7 @@
     "file-saver": "^2.0.5",
     "geoip-lite": "^1.4.10",
     "nodemailer": "^6.10.1",
+    "oxc-parser": "^0.86.0",
     "papaparse": "^5.4.1",
     "pinia": "^2.1.7",
     "quill": "^2.0.3",
