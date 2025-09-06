@@ -92,9 +92,9 @@ SUPABASE_URL=tu_supabase_url
 SUPABASE_KEY=tu_supabase_anon_key
 
 # Amazon SES
-AWS_ACCESS_KEY_ID=tu_aws_access_key
-AWS_SECRET_ACCESS_KEY=tu_aws_secret_key
-AWS_REGION=us-east-1
+SES_ACCESS_KEY_ID=tu_aws_access_key
+SES_SECRET_ACCESS_KEY=tu_aws_secret_key
+SES_REGION=us-east-1
 
 # Aplicación
 BASE_URL=http://localhost:3000

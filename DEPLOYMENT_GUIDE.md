@@ -33,9 +33,9 @@ SMTP_FROM_EMAIL=info@be-mindpower.net
 SMTP_REPLY_TO=info@be-mindpower.net
 
 # AWS
-AWS_ACCESS_KEY_ID=your_aws_access_key
-AWS_SECRET_ACCESS_KEY=your_aws_secret_key
-AWS_REGION=us-east-1
+SES_ACCESS_KEY_ID=your_aws_access_key
+SES_SECRET_ACCESS_KEY=your_aws_secret_key
+SES_REGION=us-east-1
 
 # Base
 BASE_URL=https://your-production-domain.com

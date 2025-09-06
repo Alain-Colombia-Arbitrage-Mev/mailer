@@ -16,9 +16,9 @@ export default defineNuxtConfig({
   
   runtimeConfig: {
     // Private keys (only available on server-side)
-    awsAccessKeyId: process.env.AWS_ACCESS_KEY_ID,
-    awsSecretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-    awsRegion: process.env.AWS_REGION || 'us-east-1',
+    awsAccessKeyId: process.env.SES_ACCESS_KEY_ID,
+    awsSecretAccessKey: process.env.SES_SECRET_ACCESS_KEY,
+    awsRegion: process.env.SES_REGION || 'us-east-1',
     
     // SMTP Configuration
     smtpHost: process.env.SMTP_HOST,
