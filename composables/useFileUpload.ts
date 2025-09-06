@@ -1,4 +1,6 @@
 // Usar el cliente de Supabase de Nuxt
+import { ref, readonly, computed } from 'vue'
+import { useSupabase } from './useSupabase'
 
 export interface UploadProgress {
   loaded: number
@@ -14,7 +16,7 @@ export interface UploadResult {
 }
 
 export const useFileUpload = () => {
-  const supabase = useSupabaseClient()
+  const supabase = useSupabase()
   const uploading = ref(false)
   const progress = ref<UploadProgress>({ loaded: 0, total: 0, percentage: 0 })
   const error = ref<string | null>(null)
@@ -85,7 +87,7 @@ export const useFileUpload = () => {
       }
     } catch (err: any) {
       error.value = err.message || 'Error al subir archivo'
-      return { success: false, error: error.value }
+      return { success: false, error: error.value || undefined }
     } finally {
       uploading.value = false
     }
@@ -323,7 +325,7 @@ export const useFileUpload = () => {
  */
 export const useEmailAttachments = () => {
   const { uploadFile, deleteFile, validateFile, formatFileSize, getFileIcon } = useFileUpload()
-  const { supabase } = useSupabase()
+  const supabase = useSupabase()
 
   const attachments = ref<Array<{
     id?: string
@@ -378,7 +380,11 @@ export const useEmailAttachments = () => {
    * Sube todos los adjuntos pendientes
    */
   const uploadAttachments = async (campaignId: string) => {
-    const results = []
+    const results: Array<{
+      name: string
+      success: boolean
+      error?: string
+    }> = []
 
     for (let i = 0; i < attachments.value.length; i++) {
       const attachment = attachments.value[i]

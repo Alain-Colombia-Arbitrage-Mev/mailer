@@ -1,1 +1,0 @@
-import{a1 as a,n as o}from"#entry";import{u as t}from"./BcbNczkL.js";const u=a((s,i)=>{const{isAuthenticated:e}=t();if(e.value)return console.log("👤 Usuario ya autenticado, redirigiendo al dashboard desde guest middleware"),o("/dashboard");console.log("🚪 Usuario no autenticado, permitiendo acceso a página guest")});export{u as default};

@@ -80,7 +80,14 @@ export class AmazonSESService {
     text?: string
     replyTo?: string
   }>) {
-    const results = []
+    const results: Array<{
+      email: string
+      success: boolean
+      messageId?: string
+      data?: any
+      error?: string
+      code?: string
+    }> = []
     
     for (const email of emails) {
       const result = await this.sendEmail(email)
@@ -100,5 +107,5 @@ export class AmazonSESService {
 // Instancia singleton
 export const sesService = new AmazonSESService()
 
-// Función helper para obtener el servicio
-export const getEmailService = () => sesService
+// Función helper para obtener el servicio SES
+export const getSESService = () => sesService
