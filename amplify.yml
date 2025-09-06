@@ -5,27 +5,15 @@ frontend:
       commands:
         # Set Node.js version to 18 (compatible with Amplify)
         - nvm use 18
-        # Enable corepack for modern package managers
-        - corepack enable
-        # AGGRESSIVE CLEANUP - Remove everything that might contain Windows dependencies
-        - rm -rf node_modules package-lock.json ~/.npm/_cacache || true
-        # Clean npm cache completely
+        # Clean previous builds
+        - rm -rf node_modules package-lock.json || true
         - npm cache clean --force || true
-        # Create a fresh .npmrc for Linux-only dependencies
-        - echo "target_platform=linux" > .npmrc
-        - echo "target_arch=x64" >> .npmrc
-        - echo "cache=false" >> .npmrc
-        # Install with platform-specific flags for Linux
-        - npm install --no-audit --no-fund --target_platform=linux --target_arch=x64
-        # Explicitly install only Linux bindings
-        - npm install @esbuild/linux-x64 --save-dev --force || true
-        # Remove any Windows bindings that might have been installed
-        - npm uninstall @esbuild/win32-x64 @oxc-parser/binding-win32-x64-msvc @oxc-transform/binding-win32-x64-msvc @rollup/rollup-win32-x64-msvc @oxc-minify/binding-win32-x64-msvc || true
+        # Install dependencies
+        - npm ci --no-audit --no-fund
     build:
       commands:
-        # Set Node.js environment for production build with Amplify preset
+        # Set Node.js environment for production build
         - export NODE_ENV=production
-        - export NITRO_PRESET=aws-amplify
         # Build the Nuxt 3 application for Amplify
         - npm run build
   artifacts:

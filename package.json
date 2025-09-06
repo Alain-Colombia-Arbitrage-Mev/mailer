@@ -15,18 +15,12 @@
     "postinstall": "nuxt prepare"
   },
   "devDependencies": {
-    "@esbuild/win32-x64": "^0.25.9",
     "@nuxt/devtools": "^1.0.8",
     "@nuxtjs/tailwindcss": "^6.8.4",
-    "@oxc-minify/binding-win32-x64-msvc": "^0.86.0",
-    "@oxc-parser/binding-win32-x64-msvc": "^0.86.0",
-    "@oxc-transform/binding-win32-x64-msvc": "^0.86.0",
-    "@rollup/rollup-win32-x64-msvc": "^4.50.0",
     "@tailwindcss/aspect-ratio": "^0.4.2",
     "@tailwindcss/forms": "^0.5.10",
     "@tailwindcss/typography": "^0.5.16",
     "nuxt": "^3.13.0",
-    "oxc-parser": "^0.86.0",
     "typescript": "^5.2.2"
   },
   "dependencies": {
@@ -50,7 +44,6 @@
     "file-saver": "^2.0.5",
     "geoip-lite": "^1.4.10",
     "nodemailer": "^6.10.1",
-    "oxc-transform": "^0.86.0",
     "papaparse": "^5.4.1",
     "pinia": "^2.1.7",
     "quill": "^2.0.3",

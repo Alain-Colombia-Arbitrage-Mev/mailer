@@ -2,7 +2,7 @@
 import { defineNuxtConfig } from 'nuxt/config'
 
 export default defineNuxtConfig({
-  devtools: { enabled: true },
+  devtools: { enabled: false },
   compatibilityDate: '2024-04-03',
   
   modules: [
@@ -30,52 +30,36 @@ export default defineNuxtConfig({
     smtpReplyTo: process.env.SMTP_REPLY_TO,
     
     // Admin credentials (only available on server-side)
-    adminEmail: process.env.ADMIN_EMAIL || 'info@be-mindpower.net',
-    adminPassword: process.env.ADMIN_PASSWORD || 'mK-d9846MYfOTglD',
+    adminEmail: process.env.ADMIN_EMAIL,
+    adminPassword: process.env.ADMIN_PASSWORD,
     
     // Supabase service role key (only available on server-side)
     supabaseServiceKey: process.env.SUPABASE_SERVICE_ROLE_KEY,
     
     // Public keys (exposed to client-side)
     public: {
-      supabaseUrl: process.env.SUPABASE_URL || 'https://hxmdzhkkuhsetqucbpia.supabase.co',
-      supabaseAnonKey: process.env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh4bWR6aGtrdWhzZXRxdWNicGlhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4Mzk5MjEsImV4cCI6MjA2NDQxNTkyMX0.-vUT8oRIKl4Pk7UZDOVhxxMRCictahFwAFEYc98HwFI',
-      baseUrl: process.env.BASE_URL || 'http://localhost:3001'
+      supabaseUrl: process.env.SUPABASE_URL,
+      supabaseAnonKey: process.env.SUPABASE_ANON_KEY,
+      baseUrl: process.env.BASE_URL || 'http://localhost:3000'
     }
   },
   
   ssr: true,
   
-  // Configuración específica para Amplify
-  nitro: process.env.NODE_ENV === 'production' ? {
+  // Configuración optimizada para Amplify
+  nitro: {
     preset: 'aws-amplify',
-    rollupConfig: {
-      external: ['papaparse']
-    }
-  } : {
-    esbuild: {
-      options: {
-        target: 'es2020'
-      }
-    },
-    // External dependencies for server build
     experimental: {
       wasm: false
     },
-    // Handle problematic packages - exclude papaparse from bundling
-    externals: {
+    rollupConfig: {
       external: ['papaparse']
     }
   },
   
-  // Puerto configurado en 3001 según BASE_URL
+  // Puerto estándar para desarrollo
   devServer: {
-    port: 3001
-  },
-  
-  // Asegurar que los auto-imports funcionen correctamente
-  imports: {
-    autoImport: true
+    port: 3000
   },
   
   app: {
@@ -89,17 +73,16 @@ export default defineNuxtConfig({
     }
   },
 
-
-  // Vite configuration for build compatibility
+  // Configuración limpia de Vite
   vite: {
     define: {
-      global: 'globalThis',
+      global: 'globalThis'
     },
     optimizeDeps: {
       include: ['papaparse']
     },
     ssr: {
-      noExternal: ['papaparse']
+      external: ['papaparse']
     }
   }
 })
