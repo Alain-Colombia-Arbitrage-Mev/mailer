@@ -12,6 +12,17 @@ export default defineNuxtConfig({
     '@nuxtjs/supabase'
   ],
   
+  // Configuración específica del módulo Supabase
+  supabase: {
+    url: process.env.SUPABASE_URL || 'https://hxmdzhkkuhsetqucbpia.supabase.co',
+    key: process.env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh4bWR6aGtrdWhzZXRxdWNicGlhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4Mzk5MjEsImV4cCI6MjA2NDQxNTkyMX0.-vUT8oRIKl4Pk7UZDOVhxxMRCictahFwAFEYc98HwFI',
+    redirectOptions: {
+      login: '/login',
+      callback: '/auth/callback',
+      exclude: ['/']
+    }
+  },
+  
   css: ['~/assets/css/main.css'],
   
   runtimeConfig: {
@@ -38,8 +49,8 @@ export default defineNuxtConfig({
     
     // Public keys (exposed to client-side)
     public: {
-      supabaseUrl: process.env.SUPABASE_URL,
-      supabaseAnonKey: process.env.SUPABASE_ANON_KEY,
+      supabaseUrl: process.env.SUPABASE_URL || 'https://hxmdzhkkuhsetqucbpia.supabase.co',
+      supabaseAnonKey: process.env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh4bWR6aGtrdWhzZXRxdWNicGlhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4Mzk5MjEsImV4cCI6MjA2NDQxNTkyMX0.-vUT8oRIKl4Pk7UZDOVhxxMRCictahFwAFEYc98HwFI',
       baseUrl: process.env.BASE_URL || 'http://localhost:3000'
     }
   },
