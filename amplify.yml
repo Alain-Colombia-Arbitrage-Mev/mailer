@@ -5,11 +5,11 @@ frontend:
       commands:
         # Set Node.js version to 18 (compatible with Amplify)
         - nvm use 18
-        # Clean previous builds
+        # Clean previous builds (keep package-lock.json for npm ci)
         - rm -rf node_modules || true
         - npm cache clean --force || true
-        # Install dependencies
-        - npm install --no-audit --no-fund
+        # Install dependencies with npm ci for faster, reproducible builds
+        - npm ci --no-audit --no-fund
     build:
       commands:
         # Set Node.js environment for production build
