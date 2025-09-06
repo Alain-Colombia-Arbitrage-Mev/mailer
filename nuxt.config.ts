@@ -57,6 +57,11 @@ export default defineNuxtConfig({
     }
   },
   
+  // Deshabilitar transformaciones problemáticas
+  build: {
+    transpile: []
+  },
+  
   // Puerto estándar para desarrollo
   devServer: {
     port: 3000
@@ -83,6 +88,10 @@ export default defineNuxtConfig({
     },
     ssr: {
       external: ['papaparse']
+    },
+    // Deshabilitar transformaciones problemáticas de oxc
+    esbuild: {
+      target: 'es2020'
     }
   }
 })

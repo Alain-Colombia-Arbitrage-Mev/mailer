@@ -4,9 +4,10 @@ frontend:
     preBuild:
       commands:
         - nvm use 20
-        - rm -rf node_modules package-lock.json || true
+        - rm -rf node_modules package-lock.json .nuxt .output || true
         - npm cache clean --force || true
-        - npm install --no-audit --no-fund
+        - npm install --no-optional --no-audit --no-fund
+        - npm install --optional --no-audit --no-fund || true
     build:
       commands:
         - export NODE_ENV=production
