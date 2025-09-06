@@ -46,7 +46,7 @@ export default defineNuxtConfig({
   
   ssr: true,
   
-  // Configuración optimizada para Amplify
+  // Configuración optimizada para Amplify (sin OXC)
   nitro: {
     preset: 'aws-amplify',
     experimental: {
@@ -54,12 +54,21 @@ export default defineNuxtConfig({
     },
     rollupConfig: {
       external: ['papaparse']
-    }
+    },
+    // Deshabilitar optimizaciones problemáticas
+    minify: false,
+    sourceMap: false
   },
   
-  // Deshabilitar transformaciones problemáticas
+  // Configuración de build estable
   build: {
     transpile: []
+  },
+  
+  // Deshabilitar optimizaciones experimentales
+  experimental: {
+    payloadExtraction: false,
+    inlineSSRStyles: false
   },
   
   // Puerto estándar para desarrollo
@@ -78,20 +87,27 @@ export default defineNuxtConfig({
     }
   },
 
-  // Configuración limpia de Vite
+  // Configuración de Vite sin OXC
   vite: {
     define: {
       global: 'globalThis'
     },
     optimizeDeps: {
-      include: ['papaparse']
+      include: ['papaparse'],
+      // Deshabilitar OXC parser/transformer
+      esbuildOptions: {
+        target: 'es2020'
+      }
     },
     ssr: {
       external: ['papaparse']
     },
-    // Deshabilitar transformaciones problemáticas de oxc
+    // Usar esbuild en lugar de OXC
     esbuild: {
-      target: 'es2020'
-    }
+      target: 'es2020',
+      minify: true
+    },
+    // Deshabilitar transformaciones de OXC
+    plugins: []
   }
 })

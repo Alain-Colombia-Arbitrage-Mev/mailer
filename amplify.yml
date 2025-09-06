@@ -6,11 +6,13 @@ frontend:
         - nvm use 20
         - rm -rf node_modules package-lock.json .nuxt .output || true
         - npm cache clean --force || true
-        - npm install --no-optional --no-audit --no-fund
-        - npm install --optional --no-audit --no-fund || true
+        - DISABLE_OPENCOLLECTIVE=true npm install --legacy-peer-deps --no-audit --no-fund
     build:
       commands:
         - export NODE_ENV=production
+        - export DISABLE_OXC=true
+        - export NUXT_EXPERIMENTAL_OXCPARSER=false
+        - export VITE_DISABLE_OXC=true
         - npm run build
   artifacts:
     baseDirectory: .output

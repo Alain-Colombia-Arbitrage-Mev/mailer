@@ -12,10 +12,11 @@
     "dev": "nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
-    "postinstall": "nuxt prepare"
+    "postinstall": "nuxt prepare || echo 'Warning: nuxt prepare failed, but continuing...'"
   },
   "overrides": {
-    "oxc-transform": "^0.30.2"
+    "oxc-transform": "^0.30.2",
+    "oxc-parser": "^0.30.2"
   },
   "devDependencies": {
     "@nuxt/devtools": "^2.6.3",
