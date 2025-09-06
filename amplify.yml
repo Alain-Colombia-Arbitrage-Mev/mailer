@@ -1,0 +1,21 @@
+version: 1
+frontend:
+  phases:
+    preBuild:
+      commands:
+        - nvm use 20
+        - rm -rf node_modules || true
+        - npm cache clean --force || true
+        - npm ci --no-audit --no-fund
+    build:
+      commands:
+        - export NODE_ENV=production
+        - npm run build
+  artifacts:
+    baseDirectory: .output
+    files:
+      - '**/*'
+  cache:
+    paths:
+      - node_modules/**/*
+      - .nuxt/**/*
